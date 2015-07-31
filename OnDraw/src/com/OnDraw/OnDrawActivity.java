@@ -3,7 +3,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -77,6 +76,8 @@ public class OnDrawActivity extends Activity {
 	float[] getdata = new float[]{0,0};
 	
 	float[] points1 = new float[32];
+	
+	RotationMatrix RotaMatrix = new RotationMatrix();
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -168,8 +169,23 @@ public class OnDrawActivity extends Activity {
 				 float[] values = event.values;
 				//合加速度
 				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(values[0],2)
-						+Math.pow(values[2],2)+Math.pow(values[2],2)),1.0/2);
+						+Math.pow(values[1],2)+Math.pow(values[2],2)),1.0/2);
+				//手机初始水平放置
+				//前为负，后为正 x轴
+				drawView.accelerationB = values[1];
+				//左为正，右为负 y轴
+				drawView.accelerationA = -values[0];
+				//上为负，下为正 z轴
+				drawView.accelerationC = -values[2];
 				
+				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(values[1], values[0], values[2]);
+				
+				if(AbsCoodinate != null)
+				{
+					drawView.AbsCoodinateB = (float)AbsCoodinate[0][0];
+					drawView.AbsCoodinateA = (float)AbsCoodinate[1][0];
+					drawView.AbsCoodinateC = (float)AbsCoodinate[2][0];
+				}
 				
 				//平均值,即第一次滤波，取36个数的平均值
 				AverageAccelerometer = CalculateAverageOfHundred(Accelerometer,36);
@@ -184,14 +200,22 @@ public class OnDrawActivity extends Activity {
 				//计步Step[1]，步长Step[3]
 				Step = countstep(maxAccelerometer[0],maxAccelerometer[4],maxAccelerometer[5],maxAccelerometer[1],maxAccelerometer[2]);
 				
-				
+				drawView.Step = Step[1];
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_ORIENTATION){
 				//数据显示到屏幕上
 				 values2 = event.values;
 				 
-				//AngleSin = (float) Math.sin((values2[0]*PI)/180);
-				//AngleCos = (float) Math.cos((values2[0]*PI)/180);
+				 //初始手机保持水平姿态
+				 //yaw航偏：顺时针增大 【0，360】
+				 drawView.orientationA = 360 - values2[0];
+				 //pitch倾斜：向上旋转半圈  【0，-180】 继续旋转半圈【180，0】
+				 drawView.orientationB = -values2[1];
+				 //roll翻滚：正面朝上垂线 顺时针转一圈 【0，-90】【-90,0】【0，90】【90,0】
+				 drawView.orientationC = values2[2];
+				 
+				 RotaMatrix.CalRotaMatrix(values2[0], values2[1], values2[2]);
+				 
 				 if(Step[1]==1)
 						AngleTemp = values2[0];
 					
