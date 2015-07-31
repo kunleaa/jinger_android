@@ -74,6 +74,36 @@ public class DrawView extends View {
 	//z
 	canvas.drawText(String.valueOf(AbsCoodinateC), 10, 600, paint);
 	
+	if(AbsCoodinateB > 0)
+	{
+		canvas.drawText("正X", 10, 750, paint);
+		canvas.drawText("--", 10, 850, paint);
+	}
+	else
+	{
+		canvas.drawText("--", 10, 750, paint);
+		canvas.drawText("负X", 10, 850, paint);
+	}
+	if(AbsCoodinateA > 0)
+	{
+		canvas.drawText("正Y", 200, 750, paint);
+		canvas.drawText("--", 200, 850, paint);
+	}
+	else
+	{
+		canvas.drawText("--", 200, 750, paint);
+		canvas.drawText("负Y", 200, 850, paint);
+	}
+	if(AbsCoodinateC > 0)
+	{
+		canvas.drawText("正Z", 400, 750, paint);
+		canvas.drawText("--", 400, 850, paint);
+	}
+	else
+	{
+		canvas.drawText("--", 400, 750, paint);
+		canvas.drawText("负Z", 400, 850, paint);
+	}
 	/*canvas.drawText(String.valueOf(arraytest[0][0]), 10, 50, paint);
 	canvas.drawText(String.valueOf(arraytest[0][1]), 10, 100, paint);
 	canvas.drawText(String.valueOf(arraytest[0][2]), 10, 150, paint);
