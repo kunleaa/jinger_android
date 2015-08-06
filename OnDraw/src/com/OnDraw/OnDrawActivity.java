@@ -151,23 +151,22 @@ public class OnDrawActivity extends Activity {
 		public void onSensorChanged(SensorEvent event) {
 			float Accelerometer = 0;
 			float[] maxAccelerometer = new float[]{0,0,0,0,0,0};
-			 float[] values2 = null ;
 			 
 			 float MyAveAcc = 0;
 			
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				//数据显示到屏幕上
-				 float[] values = event.values;
+				 float[] AcceleValue = event.values;
 
 				//手机初始水平放置
 				//前为负，后为正 x轴
-				drawView.accelerationB = values[1];
+				drawView.accelerationB = AcceleValue[1];
 				//左为正，右为负 y轴
-				drawView.accelerationA = -values[0];
+				drawView.accelerationA = -AcceleValue[0];
 				//上为负，下为正 z轴
-				drawView.accelerationC = -values[2];
+				drawView.accelerationC = -AcceleValue[2];
 				
-				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(values[1], values[0], values[2]);
+				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(AcceleValue[1], AcceleValue[0], AcceleValue[2]);
 				
 				if(AbsCoodinate != null)
 				{
@@ -177,8 +176,8 @@ public class OnDrawActivity extends Activity {
 				}
 				
 				//合加速度
-				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(values[0],2)
-						+Math.pow(values[1],2)+Math.pow(values[2],2)),1.0/2);
+				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(AcceleValue[0],2)
+						+Math.pow(AcceleValue[1],2)+Math.pow(AcceleValue[2],2)),1.0/2);
 				
 				//做两次平均值虑波
 				MyAveAcc = filter.AverageFiltering(Accelerometer);
@@ -193,26 +192,28 @@ public class OnDrawActivity extends Activity {
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_ORIENTATION){
 				//数据显示到屏幕上
-				 values2 = event.values;
+				 float [] OrienValue = event.values;
+				 
+				 GeneralTool.saveToSDcard(OrienValue[0], OrienValue[1], OrienValue[2]);
 				 
 				 //初始手机保持水平姿态
 				 //yaw航偏：顺时针增大 【0，360】
-				 drawView.orientationA = 360 - values2[0];
+				 drawView.orientationA = 360 - OrienValue[0];
 				 //pitch倾斜：向上旋转半圈  【0，-180】 继续旋转半圈【180，0】
-				 drawView.orientationB = -values2[1];
+				 drawView.orientationB = -OrienValue[1];
 				 //roll翻滚：正面朝上垂线 顺时针转一圈 【0，-90】【-90,0】【0，90】【90,0】
-				 drawView.orientationC = values2[2];
+				 drawView.orientationC = OrienValue[2];
 				 
-				 RotaMatrix.CalRotaMatrix(values2[0], values2[1], values2[2]);
+				 RotaMatrix.CalRotaMatrix(OrienValue[0], OrienValue[1], OrienValue[2]);
 				 
 				 if(Step[1]==1)
-						AngleTemp = values2[0];
+						AngleTemp = OrienValue[0];
 					
-					 angleTrans = AngleTrans(values2[0]);
-					 AngleSin = (float) Math.sin((angleTrans*PI)/180);
-					 AngleCos = (float) Math.cos((angleTrans*PI)/180);
+				angleTrans = AngleTrans(OrienValue[0]);
+				AngleSin = (float) Math.sin((angleTrans*PI)/180);
+				AngleCos = (float) Math.cos((angleTrans*PI)/180);
 				 
-				 //saveToSDcard(values2[0],angleTrans,AngleSin,AngleCos,0,0);
+				 //saveToSDcard(OrienValue[0],angleTrans,AngleSin,AngleCos,0,0);
 			}
 			
 			getdata = Trans(Step[1]);
