@@ -35,15 +35,6 @@ public class OnDrawActivity extends Activity {
 	private SensorManager manager;
 	private SensorListener listener = new SensorListener();
 	
-	//计算平均值所需的数据，
-	float fArray[] = new float[36];
-	int iLastIndex = -1;
-	int iIsHundred = 0;
-	
-	float fArray2[] = new float[36];
-	int iLastIndex2 = -1;
-	int iIsHundred2 = 0;
-	
 	//max,min
 	float fArray3[] = new float[100];
 	int iLastIndex3 = -1;
@@ -78,6 +69,7 @@ public class OnDrawActivity extends Activity {
 	float[] points1 = new float[32];
 	
 	RotationMatrix RotaMatrix = new RotationMatrix();
+	Filter filter = new Filter();
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -158,18 +150,15 @@ public class OnDrawActivity extends Activity {
 
 		public void onSensorChanged(SensorEvent event) {
 			float Accelerometer = 0;
-			float AverageAccelerometer = 0;
-			float AverageAccelerometer2 = 0;
 			float[] maxAccelerometer = new float[]{0,0,0,0,0,0};
 			 float[] values2 = null ;
-			
+			 
+			 float MyAveAcc = 0;
 			
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				//数据显示到屏幕上
 				 float[] values = event.values;
-				//合加速度
-				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(values[0],2)
-						+Math.pow(values[1],2)+Math.pow(values[2],2)),1.0/2);
+
 				//手机初始水平放置
 				//前为负，后为正 x轴
 				drawView.accelerationB = values[1];
@@ -187,16 +176,16 @@ public class OnDrawActivity extends Activity {
 					drawView.AbsCoodinateC = (float)AbsCoodinate[2][0];
 				}
 				
-				//平均值,即第一次滤波，取36个数的平均值
-				AverageAccelerometer = CalculateAverageOfHundred(Accelerometer,36);
-				//平均值,即第二次滤波，取3个数的平均值
-				AverageAccelerometer2 = CalculateAverageOfHundred2(AverageAccelerometer,3);
+				//合加速度
+				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(values[0],2)
+						+Math.pow(values[1],2)+Math.pow(values[2],2)),1.0/2);
+				
+				//做两次平均值虑波
+				MyAveAcc = filter.AverageFiltering(Accelerometer);
 				
 				//取第二次滤波后的值的极大值和极小值,
-				maxAccelerometer = max(AverageAccelerometer2);
+				maxAccelerometer = max(MyAveAcc);
 				
-				
-				//saveToSDcard(maxAccelerometer[4],maxAccelerometer[1],maxAccelerometer[5],maxAccelerometer[2]);
 				//计步Step[1]，步长Step[3]
 				Step = countstep(maxAccelerometer[0],maxAccelerometer[4],maxAccelerometer[5],maxAccelerometer[1],maxAccelerometer[2]);
 				
@@ -280,65 +269,6 @@ public class OnDrawActivity extends Activity {
 
 		}
 	
-	//平均值,即第一次滤波，取36个数的平均值
-	public float CalculateAverageOfHundred(float fValue,int M){
-		
-		int i=0;
-		float fAverage = fValue;
-		iLastIndex = (++iLastIndex)%M;//%36求余数
-		fArray[iLastIndex] = fValue;
-		if(iIsHundred == 0)
-		{
-			if((M-1) == iLastIndex)
-			{
-				iIsHundred = 1;
-			}
-			for(i = 0; i != iLastIndex ; i++)
-	  		{
-	  			fAverage = fAverage + fArray[i];
-	  		}
-			fAverage = fAverage / (iLastIndex + 1);
-	  }
-	  else
-	  {
-	  	for(i = ((iLastIndex + 1)%M); i != iLastIndex ; i = ((i + 1)%M))
-	  	{
-	  		fAverage = fAverage + fArray[i];
-	  	}
-	  	fAverage =fAverage / M;
-	  }
-		
-		return fAverage;
-  }
-	
-	//平均值,即第二次滤波，取3个数的平均值	
-	public float CalculateAverageOfHundred2(float fValue,int M){
-			int i=0;
-			float fAverage = fValue;
-			iLastIndex2 = (++iLastIndex2)%M;//%36求余数
-			fArray2[iLastIndex2] = fValue;
-			if(iIsHundred2 == 0)
-			{
-				if((M-1) == iLastIndex2)
-				{
-					iIsHundred2 = 1;
-				}
-				for(i = 0; i != iLastIndex2 ; i++)
-		  		{
-		  			fAverage = fAverage + fArray2[i];
-		  		}
-				fAverage = fAverage / (iLastIndex2 + 1);
-		  }
-		  else
-		  {
-		  	for(i = ((iLastIndex2 + 1)%M); i != iLastIndex2 ; i = ((i + 1)%M))
-		  	{
-		  		fAverage = fAverage + fArray2[i];
-		  	}
-		  	fAverage =fAverage / M;
-		  }
-			return fAverage;
-	  }
 	//极大值极小值及其角标
 	//[0]极大值极小值标志，[1]极大值角标，[2]极小值角标，[4]极大值，[5]极小值
 	public float[] max(float fValue){
@@ -502,6 +432,5 @@ public boolean onCreateOptionsMenu(Menu menu){
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
 	
 }
