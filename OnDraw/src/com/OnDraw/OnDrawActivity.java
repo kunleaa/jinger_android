@@ -42,7 +42,6 @@ public class OnDrawActivity extends Activity {
 	//缓冲区长度定位80，保证至少可以容纳下两个波峰波谷
 	int bufflength3 = 80;
 	float[] maxNum = new float[]{0,0,0,0,0,0};
-	float temp2 = 0;
 	float[] Step =new float[]{0,0,0,0,0,0,0,0};
 	//计步
 	float[] maxNum2 = new float[]{0,0,0,0,0,0,0,0};
@@ -70,6 +69,7 @@ public class OnDrawActivity extends Activity {
 	
 	RotationMatrix RotaMatrix = new RotationMatrix();
 	Filter filter = new Filter();
+	Filter FilterOfAcc = new Filter();
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -136,6 +136,10 @@ public class OnDrawActivity extends Activity {
     	Sensor orientation = manager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
     	manager.registerListener(listener, orientation, SensorManager.SENSOR_DELAY_GAME);
     	
+    	//监听陀螺仪传感器
+    	Sensor gyroscope = manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+    	manager.registerListener(listener, gyroscope, SensorManager.SENSOR_DELAY_GAME);
+    	
 		super.onResume();
 	}
 
@@ -173,6 +177,8 @@ public class OnDrawActivity extends Activity {
 					drawView.AbsCoodinateB = (float)AbsCoodinate[0][0];
 					drawView.AbsCoodinateA = (float)AbsCoodinate[1][0];
 					drawView.AbsCoodinateC = (float)AbsCoodinate[2][0];
+					
+					GeneralTool.saveToSDcard(drawView.AbsCoodinateB, FilterOfAcc.AverageFiltering(drawView.AbsCoodinateB), drawView.AbsCoodinateC, "AbsAccelerate.txt");
 				}
 				
 				//合加速度
@@ -183,7 +189,7 @@ public class OnDrawActivity extends Activity {
 				MyAveAcc = filter.AverageFiltering(Accelerometer);
 				
 				//取第二次滤波后的值的极大值和极小值,
-				maxAccelerometer = max(MyAveAcc);
+				maxAccelerometer = FindPeak(MyAveAcc);
 				
 				//计步Step[1]，步长Step[3]
 				Step = countstep(maxAccelerometer[0],maxAccelerometer[4],maxAccelerometer[5],maxAccelerometer[1],maxAccelerometer[2]);
@@ -194,7 +200,7 @@ public class OnDrawActivity extends Activity {
 				//数据显示到屏幕上
 				 float [] OrienValue = event.values;
 				 
-				 GeneralTool.saveToSDcard(OrienValue[0], OrienValue[1], OrienValue[2]);
+				 //GeneralTool.saveToSDcard(OrienValue[0], OrienValue[1], OrienValue[2]);
 				 
 				 //初始手机保持水平姿态
 				 //yaw航偏：顺时针增大 【0，360】
@@ -214,6 +220,12 @@ public class OnDrawActivity extends Activity {
 				AngleCos = (float) Math.cos((angleTrans*PI)/180);
 				 
 				 //saveToSDcard(OrienValue[0],angleTrans,AngleSin,AngleCos,0,0);
+			}
+			else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
+				float [] GyroValue = event.values;
+				drawView.GyroscopeA = GyroValue[0];
+				drawView.GyroscopeB = GyroValue[1];
+				drawView.GyroscopeC = GyroValue[2];
 			}
 			
 			getdata = Trans(Step[1]);
@@ -272,7 +284,7 @@ public class OnDrawActivity extends Activity {
 	
 	//极大值极小值及其角标
 	//[0]极大值极小值标志，[1]极大值角标，[2]极小值角标，[4]极大值，[5]极小值
-	public float[] max(float fValue){
+	public float[] FindPeak(float fValue){
 		maxNum[0] = 0;
 		
 		iLastIndex3 = (++iLastIndex3)%bufflength3 ;

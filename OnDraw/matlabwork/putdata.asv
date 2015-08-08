@@ -18,7 +18,7 @@ figure
 plot(col_2);
 std2 = std(col_2)
 fft2 = fft(col_2);
-fft2 = fft2(2:eng);
+fft2 = fft2(2:end);
 figure
 plot(abs(fft2));
 
@@ -27,6 +27,6 @@ figure
 plot(col_3);
 std3 = std(col_3)
 fft3 = fft(col_3);
-fft2 = fft2(2:eng);
+fft3 = fft3(2:end);
 figure
 plot(abs(fft3));

@@ -26,6 +26,10 @@ public class DrawView extends View {
 	float AbsCoodinateB = 0;
 	float AbsCoodinateC = 0;
 	
+	float GyroscopeA = 0;
+	float GyroscopeB = 0;
+	float GyroscopeC = 0;
+	
 	public DrawView(Context context) {
 	super(context);
 	// TODO Auto-generated constructor stub
@@ -36,86 +40,90 @@ public class DrawView extends View {
 	*/
 	@Override
 	protected void onDraw(Canvas canvas) {
-	super.onDraw(canvas);
-	canvas.drawColor(Color.WHITE);//底色是白色
-	
-	Paint paint=new Paint();//设置一个笔
-	paint.setAntiAlias(true);//设置没有锯齿
-	paint.setColor(Color.RED);//设置笔的颜色
-	canvas.drawCircle(paintX, paintY, radius, paint);//距离画圆
-	
-	paint.setColor(Color.BLUE);
-	paint.setStrokeWidth(4);
-	paint.setStyle(Paint.Style.STROKE);
-	Path path = new Path();
-	canvas.drawLines(points, paint);
-	
-	paint.setColor(Color.RED);//设置笔的颜色
-	paint.setTextSize(50);
-	
-	//yaw
-	canvas.drawText(String.valueOf(orientationA), 10, 50, paint);
-	//pitch
-	canvas.drawText(String.valueOf(orientationB), 10, 100, paint);
-	//roll
-	canvas.drawText(String.valueOf(orientationC), 10, 150, paint);
-	
-	//x
-	canvas.drawText(String.valueOf(accelerationB), 10, 250, paint);
-	//y
-	canvas.drawText(String.valueOf(accelerationA), 10, 300, paint);
-	//z
-	canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
-	
-	//x
-	canvas.drawText(String.valueOf(AbsCoodinateB), 10, 500, paint);
-	//y
-	canvas.drawText(String.valueOf(AbsCoodinateA), 10, 550, paint);
-	//z
-	canvas.drawText(String.valueOf(AbsCoodinateC), 10, 600, paint);
-	
-	if(AbsCoodinateB > 0)
-	{
-		canvas.drawText("正X", 10, 750, paint);
-		canvas.drawText("--", 10, 850, paint);
+		super.onDraw(canvas);
+		canvas.drawColor(Color.WHITE);//底色是白色
+		
+		Paint paint=new Paint();//设置一个笔
+		paint.setAntiAlias(true);//设置没有锯齿
+		paint.setColor(Color.RED);//设置笔的颜色
+		canvas.drawCircle(paintX, paintY, radius, paint);//距离画圆
+		
+		paint.setColor(Color.BLUE);
+		paint.setStrokeWidth(4);
+		paint.setStyle(Paint.Style.STROKE);
+		Path path = new Path();
+		canvas.drawLines(points, paint);
+		
+		paint.setColor(Color.RED);//设置笔的颜色
+		paint.setTextSize(50);
+		
+		//yaw
+		canvas.drawText(String.valueOf(orientationA), 10, 50, paint);
+		//pitch
+		canvas.drawText(String.valueOf(orientationB), 10, 100, paint);
+		//roll
+		canvas.drawText(String.valueOf(orientationC), 10, 150, paint);
+		
+		//x
+		canvas.drawText(String.valueOf(accelerationB), 10, 250, paint);
+		//y
+		canvas.drawText(String.valueOf(accelerationA), 10, 300, paint);
+		//z
+		canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
+		
+		//x
+		canvas.drawText(String.valueOf(AbsCoodinateB), 10, 500, paint);
+		//y
+		canvas.drawText(String.valueOf(AbsCoodinateA), 10, 550, paint);
+		//z
+		canvas.drawText(String.valueOf(AbsCoodinateC), 10, 600, paint);
+		
+		if(AbsCoodinateB > 0)
+		{
+			canvas.drawText("正X", 10, 750, paint);
+			canvas.drawText("--", 10, 850, paint);
+		}
+		else
+		{
+			canvas.drawText("--", 10, 750, paint);
+			canvas.drawText("负X", 10, 850, paint);
+		}
+		if(AbsCoodinateA > 0)
+		{
+			canvas.drawText("正Y", 200, 750, paint);
+			canvas.drawText("--", 200, 850, paint);
+		}
+		else
+		{
+			canvas.drawText("--", 200, 750, paint);
+			canvas.drawText("负Y", 200, 850, paint);
+		}
+		if(AbsCoodinateC > 0)
+		{
+			canvas.drawText("正Z", 400, 750, paint);
+			canvas.drawText("--", 400, 850, paint);
+		}
+		else
+		{
+			canvas.drawText("--", 400, 750, paint);
+			canvas.drawText("负Z", 400, 850, paint);
+		}
+		
+		canvas.drawText(String.valueOf(GyroscopeA), 10, 950, paint);
+		canvas.drawText(String.valueOf(GyroscopeB), 10, 1000, paint);
+		canvas.drawText(String.valueOf(GyroscopeC), 10, 1050, paint);
+		
+		/*canvas.drawText(String.valueOf(arraytest[0][0]), 10, 50, paint);
+		canvas.drawText(String.valueOf(arraytest[0][1]), 10, 100, paint);
+		canvas.drawText(String.valueOf(arraytest[0][2]), 10, 150, paint);
+		canvas.drawText(String.valueOf(arraytest[1][0]), 10, 200, paint);
+		canvas.drawText(String.valueOf(arraytest[1][1]), 10, 250, paint);
+		canvas.drawText(String.valueOf(arraytest[1][2]), 10, 300, paint);
+		canvas.drawText(String.valueOf(arraytest[2][0]), 10, 350, paint);
+		canvas.drawText(String.valueOf(arraytest[2][1]), 10, 400, paint);
+		canvas.drawText(String.valueOf(arraytest[2][2]), 10, 450, paint);*/
+		
+		//canvas.drawText(String.valueOf(Step), 10, 250, paint);
 	}
-	else
-	{
-		canvas.drawText("--", 10, 750, paint);
-		canvas.drawText("负X", 10, 850, paint);
-	}
-	if(AbsCoodinateA > 0)
-	{
-		canvas.drawText("正Y", 200, 750, paint);
-		canvas.drawText("--", 200, 850, paint);
-	}
-	else
-	{
-		canvas.drawText("--", 200, 750, paint);
-		canvas.drawText("负Y", 200, 850, paint);
-	}
-	if(AbsCoodinateC > 0)
-	{
-		canvas.drawText("正Z", 400, 750, paint);
-		canvas.drawText("--", 400, 850, paint);
-	}
-	else
-	{
-		canvas.drawText("--", 400, 750, paint);
-		canvas.drawText("负Z", 400, 850, paint);
-	}
-	/*canvas.drawText(String.valueOf(arraytest[0][0]), 10, 50, paint);
-	canvas.drawText(String.valueOf(arraytest[0][1]), 10, 100, paint);
-	canvas.drawText(String.valueOf(arraytest[0][2]), 10, 150, paint);
-	canvas.drawText(String.valueOf(arraytest[1][0]), 10, 200, paint);
-	canvas.drawText(String.valueOf(arraytest[1][1]), 10, 250, paint);
-	canvas.drawText(String.valueOf(arraytest[1][2]), 10, 300, paint);
-	canvas.drawText(String.valueOf(arraytest[2][0]), 10, 350, paint);
-	canvas.drawText(String.valueOf(arraytest[2][1]), 10, 400, paint);
-	canvas.drawText(String.valueOf(arraytest[2][2]), 10, 450, paint);*/
-	
-	//canvas.drawText(String.valueOf(Step), 10, 250, paint);
-
-	}
-	}
+}
 
