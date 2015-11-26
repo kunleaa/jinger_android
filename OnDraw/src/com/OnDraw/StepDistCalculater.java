@@ -1,4 +1,5 @@
 package com.OnDraw;
+
 public class StepDistCalculater{
 	//当前最大值
 	float MaxValue = 0;

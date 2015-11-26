@@ -8,8 +8,8 @@ import android.graphics.Path;
 import android.view.View;
 
 public class DrawView extends View {
-	//float paintX =558;
-	//float paintY =44;
+	final int FREQUENT = 50; //目前传感器更新频率为一秒50次
+	int refreshcount = 0;
 	float paintX =0;
 	float paintY =0;
 	float radius =10;
@@ -20,6 +20,9 @@ public class DrawView extends View {
 	float orientationA = 0;
 	float orientationB = 0;
 	float orientationC = 0;
+	float orientationAA = 0;
+	float orientationBB = 0;
+	float orientationCC = 0;
 	float Step = 0;
 	
 	float AbsCoodinateA = 0;
@@ -29,6 +32,9 @@ public class DrawView extends View {
 	float GyroscopeA = 0;
 	float GyroscopeB = 0;
 	float GyroscopeC = 0;
+	
+	int bufflength = 1024; 
+	float[] points1 = new float[bufflength];
 	
 	public DrawView(Context context) {
 	super(context);
@@ -57,12 +63,21 @@ public class DrawView extends View {
 		paint.setColor(Color.RED);//设置笔的颜色
 		paint.setTextSize(50);
 		
+		canvas.drawLines(points1, paint);
+		
 		//yaw
 		canvas.drawText(String.valueOf(orientationA), 10, 50, paint);
 		//pitch
 		canvas.drawText(String.valueOf(orientationB), 10, 100, paint);
 		//roll
 		canvas.drawText(String.valueOf(orientationC), 10, 150, paint);
+		
+		//yaw
+		canvas.drawText(String.valueOf(orientationAA), 400, 50, paint);
+		//pitch
+		canvas.drawText(String.valueOf(orientationBB), 400, 100, paint);
+		//roll
+		canvas.drawText(String.valueOf(orientationCC), 400, 150, paint);
 		
 		//x
 		canvas.drawText(String.valueOf(accelerationB), 10, 250, paint);
@@ -72,11 +87,11 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
 		
 		//x
-		canvas.drawText(String.valueOf(AbsCoodinateB), 10, 500, paint);
+		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateB)), 10, 500, paint);
 		//y
-		canvas.drawText(String.valueOf(AbsCoodinateA), 10, 550, paint);
+		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateA)), 10, 550, paint);
 		//z
-		canvas.drawText(String.valueOf(AbsCoodinateC), 10, 600, paint);
+		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateC)), 10, 600, paint);
 		
 		if(AbsCoodinateB > 0)
 		{
@@ -124,6 +139,21 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(arraytest[2][2]), 10, 450, paint);*/
 		
 		//canvas.drawText(String.valueOf(Step), 10, 250, paint);
+	}
+	
+	public void IsInvalidate()
+	{
+		//控制一秒刷新一次
+		if(refreshcount > 0.1*FREQUENT)
+		{
+			refreshcount = 0;
+			this.invalidate();
+		}
+		else
+		{
+			refreshcount++;
+			return ;
+		}
 	}
 }
 

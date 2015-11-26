@@ -55,9 +55,20 @@ public class OnDrawActivity extends Activity {
 	
 	RotationMatrix RotaMatrix = new RotationMatrix();
 	Filter filter = new Filter();
-	Filter FilterOfAcc = new Filter();
+	Filter FilterOfAccX = new Filter();
+	Filter FilterOfAccY = new Filter();
+	Filter FilterOfAccZ = new Filter();
 	PeakFinder PeFin = new PeakFinder();
 	StepDistCalculater SDCal = new StepDistCalculater();
+	
+	int iLastIndex = 0;
+	int bufflength = 1024; 
+	float[] pointsLine = new float[bufflength];
+	float temp0=0;
+	float temp1=0;
+	
+    private float[] accelerometerValues = new float[3];
+    private float[] magneticFieldValues = new float[3];
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,12 +118,12 @@ public class OnDrawActivity extends Activity {
         drawView.points = points2;
 
 		//调用重新绘制
-		drawView.invalidate();
+		drawView.IsInvalidate();
     
     }
     
     protected void onResume() {
-		//监听加速度传感器
+		//监听加速度传感器TYPE_ACCELEROMETER
     	Sensor accelerometer = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     	manager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 	
@@ -124,7 +135,11 @@ public class OnDrawActivity extends Activity {
     	Sensor gyroscope = manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     	manager.registerListener(listener, gyroscope, SensorManager.SENSOR_DELAY_GAME);
     	
-		super.onResume();
+    	// 初始化地磁场传感器
+    	Sensor magnetic = manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    	manager.registerListener(listener, magnetic, SensorManager.SENSOR_DELAY_GAME);
+    	
+    	super.onResume();
 	}
 
     protected void onStop(){
@@ -142,29 +157,30 @@ public class OnDrawActivity extends Activity {
 			
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				//数据显示到屏幕上
-				 float[] AcceleValue = event.values;
-
+				accelerometerValues = event.values;
 				//手机初始水平放置
 				//前为负，后为正 x轴
-				drawView.accelerationB = AcceleValue[1];
+				drawView.accelerationB = accelerometerValues[1];
 				//左为正，右为负 y轴
-				drawView.accelerationA = -AcceleValue[0];
+				drawView.accelerationA = -accelerometerValues[0];
 				//上为负，下为正 z轴
-				drawView.accelerationC = -AcceleValue[2];
+				drawView.accelerationC = -accelerometerValues[2];
 				
 				//由旋转矩阵计算的绝对坐标系下加速度的坐标值
-				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(AcceleValue[1], AcceleValue[0], AcceleValue[2]);
+				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(accelerometerValues[1], accelerometerValues[0], accelerometerValues[2]);
 				if(AbsCoodinate != null)
 				{
 					drawView.AbsCoodinateB = (float)AbsCoodinate[0][0];
 					drawView.AbsCoodinateA = (float)AbsCoodinate[1][0];
 					drawView.AbsCoodinateC = (float)AbsCoodinate[2][0];
-					//GeneralTool.saveToSDcard(drawView.AbsCoodinateB, FilterOfAcc.AverageFiltering(drawView.AbsCoodinateB), drawView.AbsCoodinateC, "AbsAccelerate.txt");
+					//GeneralTool.saveToSDcard(FilterOfAccX.AverageFiltering(drawView.AbsCoodinateB),
+					//		                 FilterOfAccY.AverageFiltering(drawView.AbsCoodinateA),
+					//		                 FilterOfAccZ.AverageFiltering(drawView.AbsCoodinateC));
 				}
 				
 				//合加速度
-				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(AcceleValue[0],2)
-						+Math.pow(AcceleValue[1],2)+Math.pow(AcceleValue[2],2)),1.0/2);
+				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(accelerometerValues[0],2)
+						+Math.pow(accelerometerValues[1],2)+Math.pow(accelerometerValues[2],2)),1.0/2);
 				//做两次平均值虑波
 				MyAveAcc = filter.AverageFiltering(Accelerometer);
 				//取第二次滤波后的值的极大值和极小值
@@ -203,6 +219,12 @@ public class OnDrawActivity extends Activity {
 				drawView.GyroscopeB = GyroValue[1];
 				drawView.GyroscopeC = GyroValue[2];
 			}
+			else if(event.sensor.getType()==Sensor.TYPE_MAGNETIC_FIELD)
+			{
+				magneticFieldValues = event.values;
+			}
+			
+			calculateOrientation();
 			
 			getdata = Trans(SDCal.StepCount);
 			if(getdata[0]>(screenWidth/2+18*every))
@@ -217,10 +239,27 @@ public class OnDrawActivity extends Activity {
 	        drawView.paintX=getdata[0];
 			drawView.paintY=getdata[1];
 			drawView.radius = every;
+			
+			drawView.points1=GetPointsLine(getdata);
+			
 			//调用重新绘制
-			drawView.invalidate();
+			drawView.IsInvalidate();
 		}
 	}
+	
+    // 计算方向
+    private void calculateOrientation() {
+    	float[] orientationvalues = new float[3];
+	    float[] R = new float[9];
+	    SensorManager.getRotationMatrix(R, null, accelerometerValues,magneticFieldValues);
+	    SensorManager.getOrientation(R, orientationvalues);
+	    orientationvalues[0] = (float) Math.toDegrees(orientationvalues[0]);
+	    orientationvalues[1] = (float) Math.toDegrees(orientationvalues[1]);
+	    orientationvalues[2] = (float) Math.toDegrees(orientationvalues[2]);
+	    drawView.orientationAA = (720 - orientationvalues[0])%360;
+	    drawView.orientationBB = -orientationvalues[1];
+	    drawView.orientationCC = -orientationvalues[2];
+    }
 	
 	//人员角度的变化
 	public float AngleTrans(float fValue){
@@ -249,6 +288,34 @@ public class OnDrawActivity extends Activity {
 		}
 		//saveToSDcard(mStep, SDCal.StepCount, mAngleSin, AngleSin);
 		return StepTranslate;
+	}
+	
+	public  float[] GetPointsLine(float[] fValues){
+		if((fValues[0]!=temp0)&&(fValues[1]!=temp1)&&
+				(fValues[0]!=0)&&(fValues[1]!=0)){
+			if(iLastIndex <4)
+			{
+				pointsLine[0] = fValues[0];
+				pointsLine[1] = fValues[1];
+				pointsLine[2] = fValues[0];
+				pointsLine[3] = fValues[1];
+			}
+			else
+			{
+				pointsLine[iLastIndex-2] = fValues[0];
+				pointsLine[iLastIndex-1] = fValues[1];
+				pointsLine[iLastIndex] = fValues[0];
+				pointsLine[iLastIndex+1] = fValues[1];
+				pointsLine[iLastIndex+2] = fValues[0];
+				pointsLine[iLastIndex+3] = fValues[1];
+			}
+			iLastIndex = (iLastIndex+4)%bufflength;
+			temp0 = fValues[0];
+			temp1 = fValues[1];
+		}
+		
+		//generalTool.saveToSDcard(drawView.points1);
+		return pointsLine;
 	}
 	
 	public boolean onCreateOptionsMenu(Menu menu){
