@@ -4,23 +4,25 @@ public class StepDistCalculater{
 	//当前最大值
 	float MaxValue = 0;
 	//步数计数器
-	float StepCount = 0;
+	int StepCount = 0;
 	//当前最大值下标
-	float MaxValueIndex = 0;
+	int MaxValueIndex = 0;
 	//一步的距离
 	float DistanceOneStep = 0;
 	//前一个最大值
 	float PreMaxValue = 0;
 	//前一个最大值下标
-	float PreMaxValueIndex = 0;
-	//当前最小值
-	float MinValue = 0;
-	//当前最小值下标
-	float MinValueIndex = 0;
+	int PreMaxValueIndex = 0;
+	//前一个最小值
+	float PreMinValue = 0;
+	//前一个最小值下标
+	int PreMinValueIndex = 0;
+	//此时刻是否走出一步
+	int isStep = 0;
 	
 	public void CalcuStepDist(PeakFinder PeFin)
 	{
-		
+		isStep = 0;
 		//不是极值
 		if(0 == (int)PeFin.isPeak)
 		{
@@ -47,20 +49,20 @@ public class StepDistCalculater{
 			  //这个条件在需要再讨论if(MaxValue - LPeak > 0.8)
 			if(MaxValue - PeFin.LPeak > 0.6 )
 			{
-				
-				MinValue = PeFin.LPeak;
-				//极小值角标
-				MinValueIndex = PeFin.LPeakIndex;
+				//这个时刻跨出一步
+				isStep = 1;
+				//保存本次有效的极小值
+				PreMinValue = PeFin.LPeak;
+				PreMinValueIndex = PeFin.LPeakIndex;
 				//计算上一步的距离
 				DistanceOneStep = calculatedistance(PeFin);
 				
 				//保存本次的最大值，为下次计算距离做准备
 				PreMaxValue = MaxValue;
-				PreMaxValueIndex = MaxValueIndex; 
+				PreMaxValueIndex = MaxValueIndex;
 				
 				//满足的话记步加1
 				++StepCount;
-				
 				
 				//本次最大值清零
 				MaxValue = 0;

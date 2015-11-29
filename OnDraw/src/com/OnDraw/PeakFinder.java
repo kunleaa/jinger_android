@@ -15,9 +15,9 @@ public class PeakFinder{
 	//极小值角标
 	float LPeak = 0;
 	//极大值
-	float MPeakIndex = 0;
+	int MPeakIndex = 0;
 	//极小值
-	float LPeakIndex = 0;
+	int LPeakIndex = 0;
 	
 	//求极大值极小值及其角标
 	public void FindPeak(float fValue){
@@ -73,7 +73,6 @@ public class PeakFinder{
 			if(fArray3[(iLastIndex3 + bufflength3 - 1) % bufflength3] < fArray3[iLastIndex3] && 
 			   fArray3[(iLastIndex3 + bufflength3 - 1) % bufflength3] < fArray3[(iLastIndex3 + bufflength3 - 2) % bufflength3])
 			{
-				
 				isPeak = 2;
   				LPeakIndex = (iLastIndex3 + bufflength3 - 1) % bufflength3;
   				LPeak = fArray3[(iLastIndex3 + bufflength3 - 1) % bufflength3];
@@ -81,5 +80,9 @@ public class PeakFinder{
 		}
 		//saveToSDcard(fArray3[(int) MPeakIndex],MPeakIndex,fArray3[(int) LPeakIndex],LPeakIndex);
 		return;
+	}
+	public void StoreValue(float fValue){
+		iLastIndex3 = (++iLastIndex3)%bufflength3 ;
+		fArray3[iLastIndex3] = fValue;
 	}
 }

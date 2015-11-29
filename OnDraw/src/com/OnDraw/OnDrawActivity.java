@@ -59,6 +59,8 @@ public class OnDrawActivity extends Activity {
 	Filter FilterOfAccY = new Filter();
 	Filter FilterOfAccZ = new Filter();
 	PeakFinder PeFin = new PeakFinder();
+	PeakFinder PeFin_X = new PeakFinder();
+	PeakFinder PeFin_Y = new PeakFinder();
 	StepDistCalculater SDCal = new StepDistCalculater();
 	
 	int iLastIndex = 0;
@@ -119,7 +121,6 @@ public class OnDrawActivity extends Activity {
 
 		//调用重新绘制
 		drawView.IsInvalidate();
-    
     }
     
     protected void onResume() {
@@ -153,45 +154,55 @@ public class OnDrawActivity extends Activity {
 
 		public void onSensorChanged(SensorEvent event) {
 			float Accelerometer = 0;
-			 float MyAveAcc = 0;
+			float [] AcValues = new float[3];
 			
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				//数据显示到屏幕上
 				accelerometerValues = event.values;
+				AcValues = event.values;
 				//手机初始水平放置
 				//前为负，后为正 x轴
-				drawView.accelerationB = accelerometerValues[1];
+				drawView.accelerationB = AcValues[1];
 				//左为正，右为负 y轴
-				drawView.accelerationA = -accelerometerValues[0];
+				drawView.accelerationA = -AcValues[0];
 				//上为负，下为正 z轴
-				drawView.accelerationC = -accelerometerValues[2];
+				drawView.accelerationC = -AcValues[2];
 				
 				//由旋转矩阵计算的绝对坐标系下加速度的坐标值
-				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(accelerometerValues[1], accelerometerValues[0], accelerometerValues[2]);
+				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(AcValues[1], AcValues[0], AcValues[2]);
 				if(AbsCoodinate != null)
 				{
-					drawView.AbsCoodinateB = (float)AbsCoodinate[0][0];
-					drawView.AbsCoodinateA = (float)AbsCoodinate[1][0];
-					drawView.AbsCoodinateC = (float)AbsCoodinate[2][0];
-					//GeneralTool.saveToSDcard(FilterOfAccX.AverageFiltering(drawView.AbsCoodinateB),
-					//		                 FilterOfAccY.AverageFiltering(drawView.AbsCoodinateA),
-					//		                 FilterOfAccZ.AverageFiltering(drawView.AbsCoodinateC));
+					drawView.AbsCoodinateB = FilterOfAccX.AverageFiltering((float)AbsCoodinate[0][0]);
+					drawView.AbsCoodinateA = FilterOfAccY.AverageFiltering((float)AbsCoodinate[1][0]);
+					drawView.AbsCoodinateC = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
+					/*GeneralTool.saveToSDcard(drawView.AbsCoodinateB,
+											 drawView.AbsCoodinateA,
+											 drawView.AbsCoodinateC,
+										     "AbsoluteCoordinate.txt");*/
 				}
-				
 				//合加速度
-				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(accelerometerValues[0],2)
-						+Math.pow(accelerometerValues[1],2)+Math.pow(accelerometerValues[2],2)),1.0/2);
-				//做两次平均值虑波
-				MyAveAcc = filter.AverageFiltering(Accelerometer);
-				//取第二次滤波后的值的极大值和极小值
-				PeFin.FindPeak(MyAveAcc);
+				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(AcValues[0],2)
+						+Math.pow(AcValues[1],2)+Math.pow(AcValues[2],2)),1.0/2);
+				Accelerometer = filter.AverageFiltering(Accelerometer);
+				//取极大值和极小值
+				PeFin.FindPeak(Accelerometer);
+				//存储X Y轴的值
+				PeFin_X.StoreValue(drawView.AbsCoodinateB);
+				PeFin_Y.StoreValue(drawView.AbsCoodinateA);
 				//计算步长和步数
 				SDCal.CalcuStepDist(PeFin);
-				
+				angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3);
+				//GeneralTool.saveToSDcard(angleTrans);
+				if(angleTrans > -1)
+				{
+					drawView.ori_acc = angleTrans; 
+					AngleSin = (float) Math.sin((angleTrans*PI)/180);
+					AngleCos = (float) Math.cos((angleTrans*PI)/180);
+				}
 				drawView.Step = SDCal.StepCount;
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_ORIENTATION){
-				//数据显示到屏幕上
+				 //数据显示到屏幕上
 				 float [] OrienValue = event.values;
 				 //GeneralTool.saveToSDcard(OrienValue[0], OrienValue[1], OrienValue[2]);
 				 
@@ -205,13 +216,14 @@ public class OnDrawActivity extends Activity {
 				 
 				 //计算旋转矩阵
 				 RotaMatrix.CalRotaMatrix(OrienValue[0], OrienValue[1], OrienValue[2]);
-				 
-				 if(SDCal.StepCount==1)
+				 //计算旋转矩阵
+				 //RotaMatrix.CalRotaMatrix(360 - drawView.orientationAA, -drawView.orientationBB, drawView.orientationCC);
+				/* if(SDCal.StepCount==1)
 						AngleTemp = OrienValue[0];
 					
 				angleTrans = AngleTrans(OrienValue[0]);
 				AngleSin = (float) Math.sin((angleTrans*PI)/180);
-				AngleCos = (float) Math.cos((angleTrans*PI)/180);
+				AngleCos = (float) Math.cos((angleTrans*PI)/180);*/
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
 				float [] GyroValue = event.values;
@@ -227,19 +239,10 @@ public class OnDrawActivity extends Activity {
 			calculateOrientation();
 			
 			getdata = Trans(SDCal.StepCount);
-			if(getdata[0]>(screenWidth/2+18*every))
-				getdata[0]=screenWidth/2+18*every;
-			else if(getdata[0]<(screenWidth/2-18*every))
-				getdata[0]=screenWidth/2-18*every;
-			else if(getdata[1]>screenHeight)
-					getdata[1]=screenHeight;
-			else if(getdata[1]<0)
-				getdata[1]=0;
 			
 	        drawView.paintX=getdata[0];
 			drawView.paintY=getdata[1];
 			drawView.radius = every;
-			
 			drawView.points1=GetPointsLine(getdata);
 			
 			//调用重新绘制

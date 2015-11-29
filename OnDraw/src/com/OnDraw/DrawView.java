@@ -33,6 +33,8 @@ public class DrawView extends View {
 	float GyroscopeB = 0;
 	float GyroscopeC = 0;
 	
+	float ori_acc = 0;
+	
 	int bufflength = 1024; 
 	float[] points1 = new float[bufflength];
 	
@@ -85,6 +87,8 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(accelerationA), 10, 300, paint);
 		//z
 		canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
+		
+		canvas.drawText(String.valueOf(ori_acc), 400, 300, paint);
 		
 		//x
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateB)), 10, 500, paint);

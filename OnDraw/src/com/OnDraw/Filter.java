@@ -48,4 +48,13 @@ public class Filter{
 		AverageFilteringProcess(AveFirstData.Average, 3, AveSecondData);
 		return AveSecondData.Average;
 	}
+	
+	public float AverageFiltering_manual(float fValue, int M)
+	{
+		if(M > 36)
+			return -1;
+		//取M个数的平均值
+		AverageFilteringProcess(fValue, M, AveSecondData);
+		return AveSecondData.Average;
+	}
 }
