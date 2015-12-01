@@ -14,12 +14,15 @@ public class DrawView extends View {
 	float paintY =0;
 	float radius =10;
 	float[] points = new float[32];
+	
 	float accelerationA =0;
 	float accelerationB =0;
 	float accelerationC =0;
+	
 	float orientationA = 0;
 	float orientationB = 0;
 	float orientationC = 0;
+	
 	float orientationAA = 0;
 	float orientationBB = 0;
 	float orientationCC = 0;
@@ -82,22 +85,22 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(orientationCC), 400, 150, paint);
 		
 		//x
-		canvas.drawText(String.valueOf(accelerationB), 10, 250, paint);
+		canvas.drawText(String.valueOf(accelerationA), 10, 250, paint);
 		//y
-		canvas.drawText(String.valueOf(accelerationA), 10, 300, paint);
+		canvas.drawText(String.valueOf(accelerationB), 10, 300, paint);
 		//z
 		canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
 		
 		canvas.drawText(String.valueOf(ori_acc), 400, 300, paint);
 		
 		//x
-		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateB)), 10, 500, paint);
+		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateA)), 10, 500, paint);
 		//y
-		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateA)), 10, 550, paint);
+		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateB)), 10, 550, paint);
 		//z
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateC)), 10, 600, paint);
 		
-		if(AbsCoodinateB > 0)
+		if(AbsCoodinateA > 0)
 		{
 			canvas.drawText("ÕýX", 10, 750, paint);
 			canvas.drawText("--", 10, 850, paint);
@@ -107,7 +110,7 @@ public class DrawView extends View {
 			canvas.drawText("--", 10, 750, paint);
 			canvas.drawText("¸ºX", 10, 850, paint);
 		}
-		if(AbsCoodinateA > 0)
+		if(AbsCoodinateB > 0)
 		{
 			canvas.drawText("ÕýY", 200, 750, paint);
 			canvas.drawText("--", 200, 850, paint);
@@ -143,6 +146,46 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(arraytest[2][2]), 10, 450, paint);*/
 		
 		//canvas.drawText(String.valueOf(Step), 10, 250, paint);
+	}
+	
+	public void SetAcceleration_1(float A, float B, float C)
+	{
+		accelerationA = A;
+		accelerationB = B;
+		accelerationC = C;
+		return;
+	}
+	
+	public void SetOrientation_1(float A, float B, float C)
+	{
+		orientationA = A;
+		orientationB = B;
+		orientationC = C;
+		return;
+	}
+	
+	public void SetOrientationByAcc(float A, float B, float C)
+	{
+		orientationAA = A;
+		orientationBB = B;
+		orientationCC = C;
+		return;
+	}
+	
+	public void SetAbsCoodinate_1(float A, float B, float C)
+	{
+		AbsCoodinateA = A;
+		AbsCoodinateB = B;
+		AbsCoodinateC = C;
+		return;
+	}
+	
+	public void SetGyroscope_1(float A, float B, float C)
+	{
+		GyroscopeA = A;
+		GyroscopeB = B;
+		GyroscopeC = C;
+		return;
 	}
 	
 	public void IsInvalidate()

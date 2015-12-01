@@ -71,6 +71,7 @@ public class OnDrawActivity extends Activity {
 	
     private float[] accelerometerValues = new float[3];
     private float[] magneticFieldValues = new float[3];
+    private float[] orientation_acc = new float[3];
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,8 +95,8 @@ public class OnDrawActivity extends Activity {
         screenWidth = dm.widthPixels;   
         screenHeight = dm.heightPixels;
         every = screenHeight/108;
-       StepTranslate[0] = screenWidth/2+18*every;
-        StepTranslate[1] = 8*every/2;
+       StepTranslate[0] = screenWidth/2;
+        StepTranslate[1] = 100*every/2;
         //StepTranslate[0] = screenWidth/2;
          //StepTranslate[1] = 8*every;
         float[] points2 = new float[]
@@ -155,29 +156,27 @@ public class OnDrawActivity extends Activity {
 		public void onSensorChanged(SensorEvent event) {
 			float Accelerometer = 0;
 			float [] AcValues = new float[3];
-			
+			float [] AbsCoodinate_filt = new float[3];
+			float [] orientation_1 = new float[3];
+
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				//数据显示到屏幕上
 				accelerometerValues = event.values;
 				AcValues = event.values;
-				//手机初始水平放置
-				//前为负，后为正 x轴
-				drawView.accelerationB = AcValues[1];
-				//左为正，右为负 y轴
-				drawView.accelerationA = -AcValues[0];
-				//上为负，下为正 z轴
-				drawView.accelerationC = -AcValues[2];
+				//原坐标下的数值表示受到力A的反作用力B，新坐标系表示A  
+				drawView.SetAcceleration_1(AcValues[1], -AcValues[0], -AcValues[2]);
 				
-				//由旋转矩阵计算的绝对坐标系下加速度的坐标值
+				//由旋转矩阵计算的绝对坐标系下加速度的坐标值 
 				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(AcValues[1], AcValues[0], AcValues[2]);
 				if(AbsCoodinate != null)
 				{
-					drawView.AbsCoodinateB = FilterOfAccX.AverageFiltering((float)AbsCoodinate[0][0]);
-					drawView.AbsCoodinateA = FilterOfAccY.AverageFiltering((float)AbsCoodinate[1][0]);
-					drawView.AbsCoodinateC = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
-					/*GeneralTool.saveToSDcard(drawView.AbsCoodinateB,
-											 drawView.AbsCoodinateA,
-											 drawView.AbsCoodinateC,
+					AbsCoodinate_filt[0] = FilterOfAccX.AverageFiltering((float)AbsCoodinate[0][0]);
+					AbsCoodinate_filt[1] = FilterOfAccY.AverageFiltering((float)AbsCoodinate[1][0]);
+					AbsCoodinate_filt[2] = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
+					drawView.SetAbsCoodinate_1(AbsCoodinate_filt[0], AbsCoodinate_filt[1], AbsCoodinate_filt[2]);
+					/*GeneralTool.saveToSDcard(AbsCoodinate_filt[0],
+											 AbsCoodinate_filt[1],
+											 AbsCoodinate_filt[2],
 										     "AbsoluteCoordinate.txt");*/
 				}
 				//合加速度
@@ -187,8 +186,8 @@ public class OnDrawActivity extends Activity {
 				//取极大值和极小值
 				PeFin.FindPeak(Accelerometer);
 				//存储X Y轴的值
-				PeFin_X.StoreValue(drawView.AbsCoodinateB);
-				PeFin_Y.StoreValue(drawView.AbsCoodinateA);
+				PeFin_X.StoreValue(AbsCoodinate_filt[0]);
+				PeFin_Y.StoreValue(AbsCoodinate_filt[1]);
 				//计算步长和步数
 				SDCal.CalcuStepDist(PeFin);
 				angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3);
@@ -208,17 +207,19 @@ public class OnDrawActivity extends Activity {
 				 
 				 //初始手机保持水平姿态
 				 //yaw航偏：顺时针增大 【0，360】
-				 drawView.orientationA = 360 - OrienValue[0];
+				 orientation_1[0] = 360 - OrienValue[0];
 				 //pitch倾斜：向上旋转半圈  【0，-180】 继续旋转半圈【180，0】
-				 drawView.orientationB = -OrienValue[1];
+				 orientation_1[1] = -OrienValue[1];
 				 //roll翻滚：正面朝上垂线 顺时针转一圈 【0，-90】【-90,0】【0，90】【90,0】
-				 drawView.orientationC = OrienValue[2];
+				 orientation_1[2] = OrienValue[2];
+				 
+				 drawView.SetOrientation_1(orientation_1[0], orientation_1[1], orientation_1[2]);
 				 
 				 //计算旋转矩阵
 				 RotaMatrix.CalRotaMatrix(OrienValue[0], OrienValue[1], OrienValue[2]);
 				 //计算旋转矩阵
-				 //RotaMatrix.CalRotaMatrix(360 - drawView.orientationAA, -drawView.orientationBB, drawView.orientationCC);
-				/* if(SDCal.StepCount==1)
+				 //RotaMatrix.CalRotaMatrix(360 - orientation_acc[0], -orientation_acc[1], orientation_acc[2]);
+				 /*if(SDCal.StepCount==1)
 						AngleTemp = OrienValue[0];
 					
 				angleTrans = AngleTrans(OrienValue[0]);
@@ -227,9 +228,7 @@ public class OnDrawActivity extends Activity {
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
 				float [] GyroValue = event.values;
-				drawView.GyroscopeA = GyroValue[0];
-				drawView.GyroscopeB = GyroValue[1];
-				drawView.GyroscopeC = GyroValue[2];
+				drawView.SetGyroscope_1(GyroValue[0], GyroValue[1], GyroValue[2]);
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_MAGNETIC_FIELD)
 			{
@@ -259,9 +258,10 @@ public class OnDrawActivity extends Activity {
 	    orientationvalues[0] = (float) Math.toDegrees(orientationvalues[0]);
 	    orientationvalues[1] = (float) Math.toDegrees(orientationvalues[1]);
 	    orientationvalues[2] = (float) Math.toDegrees(orientationvalues[2]);
-	    drawView.orientationAA = (720 - orientationvalues[0])%360;
-	    drawView.orientationBB = -orientationvalues[1];
-	    drawView.orientationCC = -orientationvalues[2];
+	    orientation_acc[0] = (720 - orientationvalues[0])%360;
+	    orientation_acc[1] = -orientationvalues[1];
+	    orientation_acc[2] = -orientationvalues[2];
+	    drawView.SetOrientationByAcc(orientation_acc[0], orientation_acc[1], orientation_acc[2]);
     }
 	
 	//人员角度的变化
