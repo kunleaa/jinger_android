@@ -47,31 +47,34 @@ public class StepDistCalculater{
 		{
 			//旧的最大值和新的极小值比较 是否满足0.8的条件
 			  //这个条件在需要再讨论if(MaxValue - LPeak > 0.8)
-			if(MaxValue - PeFin.LPeak > 0.6 )
+			if(MaxValue - PeFin.LPeak > 0.8)
 			{
-				//这个时刻跨出一步
-				isStep = 1;
-				//保存本次有效的极小值
-				PreMinValue = PeFin.LPeak;
-				PreMinValueIndex = PeFin.LPeakIndex;
-				//计算上一步的距离
-				DistanceOneStep = calculatedistance(PeFin);
-				
-				//保存本次的最大值，为下次计算距离做准备
-				PreMaxValue = MaxValue;
-				PreMaxValueIndex = MaxValueIndex;
-				
-				//满足的话记步加1
-				++StepCount;
-				
+				//加入步频阈值 假设每秒不超过3步 采集的样点数 n = F/(3*2) = 50/6 = 8.33
+				if(9 < (PeFin.LPeakIndex - MaxValueIndex + PeFin.bufflength3)%PeFin.bufflength3)
+				{
+					//这个时刻跨出一步
+					isStep = 1;
+					//保存本次有效的极小值
+					PreMinValue = PeFin.LPeak;
+					PreMinValueIndex = PeFin.LPeakIndex;
+					//计算上一步的距离
+					//DistanceOneStep = calculatedistance(PeFin);
+					DistanceOneStep = (float) Math.pow((MaxValue - PreMinValue), 1.0/4);
+					//generalTool.saveToSDcard(DistanceOneStep);
+					
+					//保存本次的最大值，为下次计算距离做准备
+					PreMaxValue = MaxValue;
+					PreMaxValueIndex = MaxValueIndex;
+					
+					//满足的话记步加1
+					++StepCount;
+				}
 				//本次最大值清零
-				MaxValue = 0;
+				MaxValue = -100;
 				MaxValueIndex = 0;
-				
 				return;
 			}
 		}
-		return;
 	}
 	
 	public float calculatedistance(PeakFinder PeFin)

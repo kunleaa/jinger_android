@@ -54,7 +54,6 @@ public class OnDrawActivity extends Activity {
 	float[] points1 = new float[32];
 	
 	RotationMatrix RotaMatrix = new RotationMatrix();
-	Filter filter = new Filter();
 	Filter FilterOfAccX = new Filter();
 	Filter FilterOfAccY = new Filter();
 	Filter FilterOfAccZ = new Filter();
@@ -158,6 +157,7 @@ public class OnDrawActivity extends Activity {
 			float [] AcValues = new float[3];
 			float [] AbsCoodinate_filt = new float[3];
 			float [] orientation_1 = new float[3];
+			float [] OrienValue = new float[3];
 
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				//数据显示到屏幕上
@@ -179,16 +179,12 @@ public class OnDrawActivity extends Activity {
 											 AbsCoodinate_filt[2],
 										     "AbsoluteCoordinate.txt");*/
 				}
-				//合加速度
-				Accelerometer = (float) java.lang.StrictMath.pow((Math.pow(AcValues[0],2)
-						+Math.pow(AcValues[1],2)+Math.pow(AcValues[2],2)),1.0/2);
-				Accelerometer = filter.AverageFiltering(Accelerometer);
-				//取极大值和极小值
-				PeFin.FindPeak(Accelerometer);
+				//取极大值和极小值，加负号去掉方向的影响
+				PeFin.FindPeak(-AbsCoodinate_filt[2]);
 				//存储X Y轴的值
 				PeFin_X.StoreValue(AbsCoodinate_filt[0]);
 				PeFin_Y.StoreValue(AbsCoodinate_filt[1]);
-				//计算步长和步数
+				//计算步长和步数，记步也是正确的
 				SDCal.CalcuStepDist(PeFin);
 				angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3);
 				//GeneralTool.saveToSDcard(angleTrans);
@@ -197,12 +193,13 @@ public class OnDrawActivity extends Activity {
 					drawView.ori_acc = angleTrans; 
 					AngleSin = (float) Math.sin((angleTrans*PI)/180);
 					AngleCos = (float) Math.cos((angleTrans*PI)/180);
+					//GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex);
 				}
 				drawView.Step = SDCal.StepCount;
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_ORIENTATION){
 				 //数据显示到屏幕上
-				 float [] OrienValue = event.values;
+				 OrienValue = event.values;
 				 //GeneralTool.saveToSDcard(OrienValue[0], OrienValue[1], OrienValue[2]);
 				 
 				 //初始手机保持水平姿态
@@ -249,7 +246,7 @@ public class OnDrawActivity extends Activity {
 		}
 	}
 	
-    // 计算方向
+    // 计算方向,数据不稳定
     private void calculateOrientation() {
     	float[] orientationvalues = new float[3];
 	    float[] R = new float[9];

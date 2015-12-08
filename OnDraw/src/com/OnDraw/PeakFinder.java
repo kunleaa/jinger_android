@@ -18,11 +18,13 @@ public class PeakFinder{
 	int MPeakIndex = 0;
 	//极小值
 	int LPeakIndex = 0;
-	
+	//记录缓冲区溢出多少次
+	int Circle = 0;
 	//求极大值极小值及其角标
 	public void FindPeak(float fValue){
 		isPeak = 0;
 		
+		AddCircle(iLastIndex3,bufflength3);
 		iLastIndex3 = (++iLastIndex3)%bufflength3 ;
 		fArray3[iLastIndex3] = fValue;
 		// 数组没有存满时的情况  
@@ -80,6 +82,13 @@ public class PeakFinder{
 		}
 		//saveToSDcard(fArray3[(int) MPeakIndex],MPeakIndex,fArray3[(int) LPeakIndex],LPeakIndex);
 		return;
+	}
+	public void AddCircle(int index,int buflen)
+	{
+		if(index == (buflen - 1))
+		{
+			Circle++;
+		}
 	}
 	public void StoreValue(float fValue){
 		iLastIndex3 = (++iLastIndex3)%bufflength3 ;

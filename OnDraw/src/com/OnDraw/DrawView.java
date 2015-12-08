@@ -135,6 +135,8 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(GyroscopeB), 10, 1000, paint);
 		canvas.drawText(String.valueOf(GyroscopeC), 10, 1050, paint);
 		
+		canvas.drawText(String.valueOf(Step), 400, 500, paint);
+		
 		/*canvas.drawText(String.valueOf(arraytest[0][0]), 10, 50, paint);
 		canvas.drawText(String.valueOf(arraytest[0][1]), 10, 100, paint);
 		canvas.drawText(String.valueOf(arraytest[0][2]), 10, 150, paint);
