@@ -170,14 +170,14 @@ public class OnDrawActivity extends Activity {
 				double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(AcValues[1], AcValues[0], AcValues[2]);
 				if(AbsCoodinate != null)
 				{
-					AbsCoodinate_filt[0] = FilterOfAccX.AverageFiltering((float)AbsCoodinate[0][0]);
-					AbsCoodinate_filt[1] = FilterOfAccY.AverageFiltering((float)AbsCoodinate[1][0]);
+					AbsCoodinate_filt[0] = FilterOfAccX.AverageFiltering_manual((float)AbsCoodinate[0][0],5);
+					AbsCoodinate_filt[1] = FilterOfAccY.AverageFiltering_manual((float)AbsCoodinate[1][0],5);
 					AbsCoodinate_filt[2] = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
 					drawView.SetAbsCoodinate_1(AbsCoodinate_filt[0], AbsCoodinate_filt[1], AbsCoodinate_filt[2]);
-					/*GeneralTool.saveToSDcard(AbsCoodinate_filt[0],
-											 AbsCoodinate_filt[1],
-											 AbsCoodinate_filt[2],
-										     "AbsoluteCoordinate.txt");*/
+					/*GeneralTool.saveToSDcard((float)AbsCoodinate[0][0],
+											 (float)AbsCoodinate[1][0],
+											 (float)AbsCoodinate[2][0],
+											 AbsCoodinate_filt[2]);*/
 				}
 				//取极大值和极小值，加负号去掉方向的影响
 				PeFin.FindPeak(-AbsCoodinate_filt[2]);

@@ -9,9 +9,17 @@ public class Orientation_With_acceleration
 		float acc[] = new float[2];
 		if(SDCal.isStep == 1)
 		{
+			//取波峰波谷中点的加速度
 			//acc = acc_middle(PF, SDCal, Acc_X, Acc_Y);
-			acc[X] = acc_average(Acc_X,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
-			acc[Y] = acc_average(Acc_Y,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
+			//取波峰波谷指定点的加速度
+			//acc = acc_onepoint(midindex(PF, SDCal), Acc_X, Acc_Y);
+			//取波峰与波谷之间加速的平均值
+			//acc[X] = acc_average(Acc_X,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
+			//acc[Y] = acc_average(Acc_Y,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
+			//取波谷和波峰四分之一处，前两个到后两个之间的平均值
+			int index1p4 = midindex(SDCal.PreMaxValueIndex, midindex(PF, SDCal), PF.bufflength3); 
+			acc[X] = acc_average(Acc_X, index1p4-2, index1p4, PF.bufflength3);
+			acc[Y] = acc_average(Acc_Y, index1p4-2, index1p4, PF.bufflength3);
 			//方向的计算是正确的
 			if(acc[Y] <= 0 && acc[X] <= 0)
 			{
@@ -32,15 +40,22 @@ public class Orientation_With_acceleration
 		}
 		return -1;
 	}
+	
 	private static float[] acc_middle(PeakFinder PF, StepDistCalculater SDCal, float[] Acc_X, float[] Acc_Y)
 	{
 		float acc[] = new float[2];
 		int index = 0;
-		if(SDCal.PreMinValueIndex > SDCal.PreMaxValueIndex)
-			index = (SDCal.PreMinValueIndex+SDCal.PreMaxValueIndex)/2;
-		else
-			index = (SDCal.PreMinValueIndex+SDCal.PreMaxValueIndex + PF.bufflength3)/2%PF.bufflength3;
-		
+		index = midindex(PF, SDCal);
+		acc[X] = Acc_X[index];
+		acc[Y] = Acc_Y[index];
+		return acc;
+	}
+	
+	//指定某一时刻点，确定加速度
+	private static float[] acc_onepoint(int index, float[] Acc_X, float[] Acc_Y)
+	{
+		float acc[] = new float[2];
+
 		acc[X] = Acc_X[index];
 		acc[Y] = Acc_Y[index];
 		return acc;
@@ -59,6 +74,24 @@ public class Orientation_With_acceleration
 		}
 		return sum/count;
 	}
+	
+	private static int midindex(PeakFinder PF, StepDistCalculater SDCal)
+	{
+		return midindex(SDCal.PreMaxValueIndex,SDCal.PreMinValueIndex,PF.bufflength3);
+	}
+	
+	private static int midindex(int start, int end, int buflen)
+	{
+		int index = 0;
+		
+		if(end > start)
+			index = (end + start)/2;
+		else
+			index = (end + start + buflen)/2%buflen;
+		
+		return index;
+	}
+	
 	//interval积分间隔
 	//PF提供长度
 	//SDC提供积分下标

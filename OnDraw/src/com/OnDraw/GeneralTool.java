@@ -68,4 +68,19 @@ public class GeneralTool{
 			e.printStackTrace();
 		}
 	}
+	public static void saveToSDcard(float x, float d, float g, float h){
+		try {			
+			//以追加的方式来保存加速度的值
+			File file = new File(Environment.getExternalStorageDirectory(),"OnDrawData4.txt");
+		    //第二个参数意义是说是否以append方式添加内容  
+		    BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));  
+		    String info = x+"  "+d+"  "+g+"  "+h;
+		    bw.write(info);
+		    bw.write("\r\n"); 
+		    bw.flush();  
+		    System.out.println("写入成功");  	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
