@@ -174,10 +174,10 @@ public class OnDrawActivity extends Activity {
 					AbsCoodinate_filt[1] = FilterOfAccY.AverageFiltering_manual((float)AbsCoodinate[1][0],5);
 					AbsCoodinate_filt[2] = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
 					drawView.SetAbsCoodinate_1(AbsCoodinate_filt[0], AbsCoodinate_filt[1], AbsCoodinate_filt[2]);
-					/*GeneralTool.saveToSDcard((float)AbsCoodinate[0][0],
-											 (float)AbsCoodinate[1][0],
-											 (float)AbsCoodinate[2][0],
-											 AbsCoodinate_filt[2]);*/
+					/*GeneralTool.saveToSDcard((float)AbsCoodinate_filt[0],
+											 (float)AbsCoodinate_filt[1],
+											 (float)AbsCoodinate_filt[2],
+											 "data_acc.txt");*/
 				}
 				//取极大值和极小值，加负号去掉方向的影响
 				PeFin.FindPeak(-AbsCoodinate_filt[2]);
@@ -193,7 +193,7 @@ public class OnDrawActivity extends Activity {
 					drawView.ori_acc = angleTrans; 
 					AngleSin = (float) Math.sin((angleTrans*PI)/180);
 					AngleCos = (float) Math.cos((angleTrans*PI)/180);
-					//GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex);
+					//GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex,"data_45index.txt");
 				}
 				drawView.Step = SDCal.StepCount;
 			}

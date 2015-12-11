@@ -17,9 +17,12 @@ public class Orientation_With_acceleration
 			//acc[X] = acc_average(Acc_X,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
 			//acc[Y] = acc_average(Acc_Y,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
 			//取波谷和波峰四分之一处，前两个到后两个之间的平均值
-			int index1p4 = midindex(SDCal.PreMaxValueIndex, midindex(PF, SDCal), PF.bufflength3); 
-			acc[X] = acc_average(Acc_X, index1p4-2, index1p4, PF.bufflength3);
-			acc[Y] = acc_average(Acc_Y, index1p4-2, index1p4, PF.bufflength3);
+			int index1p4 = midindex(SDCal.PreMaxValueIndex, midindex(PF, SDCal), PF.bufflength3);
+			//下标减2之后有可能越界，所以要加上bufflength3，再取余
+			int start = (index1p4-2+PF.bufflength3)%PF.bufflength3;
+			int end = index1p4;
+			acc[X] = acc_average(Acc_X, start, end, PF.bufflength3);
+			acc[Y] = acc_average(Acc_Y, start, end, PF.bufflength3);
 			//方向的计算是正确的
 			if(acc[Y] <= 0 && acc[X] <= 0)
 			{
@@ -66,7 +69,7 @@ public class Orientation_With_acceleration
 		int count = 1;
 		float sum = array[end];
 		//判断是否越界
-		if(start >= buflen-1 || end >= buflen-1 || start < 0 || end < 0)
+		if(start >= buflen || end >= buflen || start < 0 || end < 0)
 			return -1;
 		for(;start != end;start = (++start)%buflen,++count)
 		{
