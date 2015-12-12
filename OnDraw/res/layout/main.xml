@@ -7,7 +7,54 @@
 
     <LinearLayout 
         android:id="@+id/layout" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-></LinearLayout> 
+        android:orientation="vertical"
+        android:gravity="bottom"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" >
+        <LinearLayout 
+        android:id="@+id/layout2" 
+        android:orientation="horizontal"
+        android:layout_width="fill_parent" 
+        android:layout_height="35dp" 
+        android:gravity="top">
+        
+	        <EditText
+	        android:id="@+id/edit_start"   
+	    	android:layout_width="fill_parent"  
+	    	android:layout_height="35dp"  
+	    	android:layout_weight="1"
+	    	android:text="1"
+	    	android:textSize="14dp"
+	    	android:numeric="signed"/>
+	        
+	        <EditText
+	        android:id="@+id/edit_end"   
+	    	android:layout_width="fill_parent"  
+	    	android:layout_height="35dp"  
+	    	android:layout_weight="1"
+	    	android:text="1"
+	    	android:textSize="14dp"
+	    	android:numeric="signed"/>
+
+	        <Button
+	            android:id="@+id/btn_get_value"
+	            android:layout_width="fill_parent"
+	            android:layout_height="30dp"
+	            android:layout_weight="1"
+	            android:text="PRESS"
+	            android:textSize="11dp"
+	            android:layout_gravity="top"
+	            android:layout_marginTop="0dp"/>
+	        <Button
+	            android:id="@+id/btn_clean"
+	            android:layout_width="fill_parent"
+	            android:layout_height="30dp"
+	            android:layout_weight="1"
+	            android:text="CLEAN"
+	            android:textSize="11dp"
+	            android:layout_gravity="top"
+	            android:layout_marginTop="0dp"/>
+ 
+       	 </LinearLayout> 
+    </LinearLayout> 
 </RelativeLayout> 

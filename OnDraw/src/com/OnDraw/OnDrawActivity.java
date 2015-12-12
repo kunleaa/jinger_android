@@ -2,6 +2,7 @@ package com.OnDraw;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Arrays;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,8 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.View.OnTouchListener;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -64,13 +69,23 @@ public class OnDrawActivity extends Activity {
 	
 	int iLastIndex = 0;
 	int bufflength = 1024; 
-	float[] pointsLine = new float[bufflength];
+	float[] pointsLine = new float[32];
+	
 	float temp0=0;
 	float temp1=0;
 	
     private float[] accelerometerValues = new float[3];
     private float[] magneticFieldValues = new float[3];
     private float[] orientation_acc = new float[3];
+    
+    Button press;
+    Button clean;
+	EditText edit_start;
+	EditText edit_end;
+	
+	//startFromMiddle1p4
+	int SFM1_4 = 1;
+	int EFM1_4 = 1;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +93,30 @@ public class OnDrawActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
         
+        final InputMethodManager imm = (InputMethodManager)getSystemService(
+        	      Context.INPUT_METHOD_SERVICE);
+        
+        press = (Button)findViewById(R.id.btn_get_value);
+        clean = (Button)findViewById(R.id.btn_clean);
+        edit_start = (EditText)findViewById(R.id.edit_start);
+        edit_end = (EditText)findViewById(R.id.edit_end);
+        press.setOnClickListener(new OnClickListener() {  
+            @Override  
+            public void onClick(View v) {  
+            	SFM1_4 = Integer.parseInt(edit_start.getText().toString());  
+            	EFM1_4 = Integer.parseInt(edit_end.getText().toString());
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            }  
+        });
+        clean.setOnClickListener(new OnClickListener(){
+        	@Override  
+            public void onClick(View v) {  
+        		Arrays.fill(pointsLine, 0);
+        		StepTranslate[0] = screenWidth/2;
+        		iLastIndex = 0;
+                StepTranslate[1] = 100*every/2;
+            }  
+        });
         
         layout = (LinearLayout)  findViewById(R.id.layout);//找到这个空间
         drawView = new DrawView(this);//创建自定义的控件
@@ -98,27 +137,7 @@ public class OnDrawActivity extends Activity {
         StepTranslate[1] = 100*every/2;
         //StepTranslate[0] = screenWidth/2;
          //StepTranslate[1] = 8*every;
-        float[] points2 = new float[]
-       {screenWidth/2-3*every,0,screenWidth/2-3*every,screenHeight,
-  		screenWidth/2+3*every,0,screenWidth/2+3*every,screenHeight,
-  		screenWidth/2-18*every,0,screenWidth/2-18*every,screenHeight,
-  		screenWidth/2+18*every,0,screenWidth/2+18*every,screenHeight,
-  		screenWidth/2-18*every,0,screenWidth/2+18*every,0,
-  		screenWidth/2-18*every,screenHeight-1,screenWidth/2+18*every,screenHeight-1,
-  		screenWidth/2-3*every,18*every,screenWidth/2-18*every,18*every,
-  		screenWidth/2-3*every,36*every,screenWidth/2-18*every,36*every,
-  		screenWidth/2-3*every,61*every,screenWidth/2-18*every,61*every,
-  		screenWidth/2-3*every,71*every,screenWidth/2-18*every,71*every,
-  		screenWidth/2-3*every,88*every,screenWidth/2-18*every,88*every,
-  		screenWidth/2-3*every,99*every,screenWidth/2-18*every,99*every,
-  		screenWidth/2+3*every,8*every,screenWidth/2+18*every,8*every,
-  		screenWidth/2+3*every,24*every,screenWidth/2+18*every,24*every,
-  		screenWidth/2+3*every,37*every,screenWidth/2+18*every,37*every,
-  		screenWidth/2+3*every,64*every,screenWidth/2+18*every,64*every,
-  		screenWidth/2+3*every,90*every,screenWidth/2+18*every,90*every,
-  		screenWidth/2+3*every,99*every,screenWidth/2+18*every,99*every};
-        drawView.points = points2;
-
+        drawView.points = somefigure(screenHeight,screenWidth,every);
 		//调用重新绘制
 		drawView.IsInvalidate();
     }
@@ -153,7 +172,6 @@ public class OnDrawActivity extends Activity {
 		}
 
 		public void onSensorChanged(SensorEvent event) {
-			float Accelerometer = 0;
 			float [] AcValues = new float[3];
 			float [] AbsCoodinate_filt = new float[3];
 			float [] orientation_1 = new float[3];
@@ -186,7 +204,7 @@ public class OnDrawActivity extends Activity {
 				PeFin_Y.StoreValue(AbsCoodinate_filt[1]);
 				//计算步长和步数，记步也是正确的
 				SDCal.CalcuStepDist(PeFin);
-				angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3);
+				angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3, SFM1_4, EFM1_4);
 				//GeneralTool.saveToSDcard(angleTrans);
 				if(angleTrans > -1)
 				{
@@ -226,14 +244,14 @@ public class OnDrawActivity extends Activity {
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
 				float [] GyroValue = event.values;
-				drawView.SetGyroscope_1(GyroValue[0], GyroValue[1], GyroValue[2]);
+				//drawView.SetGyroscope_1(GyroValue[0], GyroValue[1], GyroValue[2]);
 			}
 			else if(event.sensor.getType()==Sensor.TYPE_MAGNETIC_FIELD)
 			{
 				magneticFieldValues = event.values;
 			}
 			
-			calculateOrientation();
+			//calculateOrientation();
 			
 			getdata = Trans(SDCal.StepCount);
 			
@@ -294,6 +312,14 @@ public class OnDrawActivity extends Activity {
 	public  float[] GetPointsLine(float[] fValues){
 		if((fValues[0]!=temp0)&&(fValues[1]!=temp1)&&
 				(fValues[0]!=0)&&(fValues[1]!=0)){
+			//数组扩容2倍
+			if(pointsLine.length < bufflength  && iLastIndex*4/3 >= pointsLine.length)
+			{
+				float temp[] = pointsLine;
+				pointsLine = new float[2*pointsLine.length];
+				for(int i = 0; i < temp.length; i++)
+					pointsLine[i] = temp[i];
+			}
 			if(iLastIndex <4)
 			{
 				pointsLine[0] = fValues[0];
@@ -330,13 +356,37 @@ public class OnDrawActivity extends Activity {
 		// TODO Auto-generated method stub
 		switch (item.getItemId()) {
 		case R.id.set:
-			Intent intent = new Intent();
-			intent.setClass(OnDrawActivity.this, NewActivityActivity.class);
-			startActivity(intent);
+			//Intent intent = new Intent();
+			//intent.setClass(OnDrawActivity.this, NewActivityActivity.class);
+			//startActivity(intent);
 			break;
 		default:
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	float [] somefigure(int Height, int Width, float ev2)
+	{
+		float[] points2 = new float[]
+			       {Width/2-3*ev2,0,Width/2-3*ev2,Height,
+			  		Width/2+3*ev2,0,Width/2+3*ev2,Height,
+			  		Width/2-18*ev2,0,Width/2-18*ev2,Height,
+			  		Width/2+18*ev2,0,Width/2+18*ev2,Height,
+			  		Width/2-18*ev2,0,Width/2+18*ev2,0,
+			  		Width/2-18*ev2,Height-1,Width/2+18*ev2,Height-1,
+			  		Width/2-3*ev2,18*ev2,Width/2-18*ev2,18*ev2,
+			  		Width/2-3*ev2,36*ev2,Width/2-18*ev2,36*ev2,
+			  		Width/2-3*ev2,61*ev2,Width/2-18*ev2,61*ev2,
+			  		Width/2-3*ev2,71*ev2,Width/2-18*ev2,71*ev2,
+			  		Width/2-3*ev2,88*ev2,Width/2-18*ev2,88*ev2,
+			  		Width/2-3*ev2,99*ev2,Width/2-18*ev2,99*ev2,
+			  		Width/2+3*ev2,8*ev2,Width/2+18*ev2,8*ev2,
+			  		Width/2+3*ev2,24*ev2,Width/2+18*ev2,24*ev2,
+			  		Width/2+3*ev2,37*ev2,Width/2+18*ev2,37*ev2,
+			  		Width/2+3*ev2,64*ev2,Width/2+18*ev2,64*ev2,
+			  		Width/2+3*ev2,90*ev2,Width/2+18*ev2,90*ev2,
+			  		Width/2+3*ev2,99*ev2,Width/2+18*ev2,99*ev2};
+		 return points2;
 	}
 }

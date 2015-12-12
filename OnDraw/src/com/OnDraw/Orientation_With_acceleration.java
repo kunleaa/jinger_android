@@ -3,7 +3,7 @@ public class Orientation_With_acceleration
 {
 	final static int X = 0;
 	final static int Y = 1;
-	static public float OrientWithTime(PeakFinder PF, StepDistCalculater SDCal, float[] Acc_X, float[] Acc_Y)
+	static public float OrientWithTime(PeakFinder PF, StepDistCalculater SDCal, float[] Acc_X, float[] Acc_Y, int sfm1_4, int efm1_4)
 	{
 		float value = -1;
 		float acc[] = new float[2];
@@ -19,8 +19,8 @@ public class Orientation_With_acceleration
 			//取波谷和波峰四分之一处，前两个到后两个之间的平均值
 			int index1p4 = midindex(SDCal.PreMaxValueIndex, midindex(PF, SDCal), PF.bufflength3);
 			//下标减2之后有可能越界，所以要加上bufflength3，再取余
-			int start = (index1p4-2+PF.bufflength3)%PF.bufflength3;
-			int end = (index1p4+PF.bufflength3)%PF.bufflength3;
+			int start = (index1p4+sfm1_4+PF.bufflength3)%PF.bufflength3;
+			int end = (index1p4+efm1_4+PF.bufflength3)%PF.bufflength3;
 			acc[X] = acc_average(Acc_X, start, end, PF.bufflength3);
 			acc[Y] = acc_average(Acc_Y, start, end, PF.bufflength3);
 			//方向的计算是正确的

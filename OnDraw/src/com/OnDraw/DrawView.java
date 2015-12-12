@@ -38,11 +38,11 @@ public class DrawView extends View {
 	
 	float ori_acc = 0;
 	
-	int bufflength = 1024; 
-	float[] points1 = new float[bufflength];
+	float[] points1 = {0,0,0,0};
 	
 	public DrawView(Context context) {
 	super(context);
+	
 	// TODO Auto-generated constructor stub
 	}
 
@@ -62,8 +62,8 @@ public class DrawView extends View {
 		paint.setColor(Color.BLUE);
 		paint.setStrokeWidth(4);
 		paint.setStyle(Paint.Style.STROKE);
-		Path path = new Path();
-		canvas.drawLines(points, paint);
+		//Path path = new Path();
+		//canvas.drawLines(points, paint);
 		
 		paint.setColor(Color.RED);//设置笔的颜色
 		paint.setTextSize(50);
@@ -77,19 +77,21 @@ public class DrawView extends View {
 		//roll
 		canvas.drawText(String.valueOf(orientationC), 10, 150, paint);
 		
-		//yaw
+		/*//yaw
 		canvas.drawText(String.valueOf(orientationAA), 400, 50, paint);
 		//pitch
 		canvas.drawText(String.valueOf(orientationBB), 400, 100, paint);
 		//roll
 		canvas.drawText(String.valueOf(orientationCC), 400, 150, paint);
-		
+		*/
+		/*
 		//x
 		canvas.drawText(String.valueOf(accelerationA), 10, 250, paint);
 		//y
 		canvas.drawText(String.valueOf(accelerationB), 10, 300, paint);
 		//z
 		canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
+		*/
 		
 		canvas.drawText(String.valueOf(ori_acc), 400, 300, paint);
 		
@@ -99,7 +101,7 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateB)), 10, 550, paint);
 		//z
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateC)), 10, 600, paint);
-		
+		/*
 		if(AbsCoodinateA > 0)
 		{
 			canvas.drawText("正X", 10, 750, paint);
@@ -130,11 +132,12 @@ public class DrawView extends View {
 			canvas.drawText("--", 400, 750, paint);
 			canvas.drawText("负Z", 400, 850, paint);
 		}
-		
+		*/
+		/*
 		canvas.drawText(String.valueOf(GyroscopeA), 10, 950, paint);
 		canvas.drawText(String.valueOf(GyroscopeB), 10, 1000, paint);
 		canvas.drawText(String.valueOf(GyroscopeC), 10, 1050, paint);
-		
+		*/
 		canvas.drawText(String.valueOf(Step), 400, 500, paint);
 		
 		/*canvas.drawText(String.valueOf(arraytest[0][0]), 10, 50, paint);
@@ -147,7 +150,6 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(arraytest[2][1]), 10, 400, paint);
 		canvas.drawText(String.valueOf(arraytest[2][2]), 10, 450, paint);*/
 		
-		//canvas.drawText(String.valueOf(Step), 10, 250, paint);
 	}
 	
 	public void SetAcceleration_1(float A, float B, float C)
@@ -193,7 +195,7 @@ public class DrawView extends View {
 	public void IsInvalidate()
 	{
 		//控制一秒刷新一次
-		if(refreshcount > 0.5*FREQUENT)
+		if(refreshcount > 0.6*FREQUENT)
 		{
 			refreshcount = 0;
 			this.invalidate();
