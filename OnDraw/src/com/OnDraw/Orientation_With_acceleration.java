@@ -20,7 +20,7 @@ public class Orientation_With_acceleration
 			int index1p4 = midindex(SDCal.PreMaxValueIndex, midindex(PF, SDCal), PF.bufflength3);
 			//下标减2之后有可能越界，所以要加上bufflength3，再取余
 			int start = (index1p4-2+PF.bufflength3)%PF.bufflength3;
-			int end = index1p4;
+			int end = (index1p4+PF.bufflength3)%PF.bufflength3;
 			acc[X] = acc_average(Acc_X, start, end, PF.bufflength3);
 			acc[Y] = acc_average(Acc_Y, start, end, PF.bufflength3);
 			//方向的计算是正确的

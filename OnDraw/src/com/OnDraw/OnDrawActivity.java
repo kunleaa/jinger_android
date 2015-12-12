@@ -193,7 +193,8 @@ public class OnDrawActivity extends Activity {
 					drawView.ori_acc = angleTrans; 
 					AngleSin = (float) Math.sin((angleTrans*PI)/180);
 					AngleCos = (float) Math.cos((angleTrans*PI)/180);
-					//GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex,"data_45index.txt");
+					//GeneralTool.saveToSDcard(angleTrans,drawView.orientationA,"data_angel.txt");
+					//GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex,"data_minindex.txt");
 				}
 				drawView.Step = SDCal.StepCount;
 			}

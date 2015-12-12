@@ -193,7 +193,7 @@ public class DrawView extends View {
 	public void IsInvalidate()
 	{
 		//控制一秒刷新一次
-		if(refreshcount > 0.1*FREQUENT)
+		if(refreshcount > 0.5*FREQUENT)
 		{
 			refreshcount = 0;
 			this.invalidate();
