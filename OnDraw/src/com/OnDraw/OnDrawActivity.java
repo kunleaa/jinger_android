@@ -87,6 +87,8 @@ public class OnDrawActivity extends Activity {
 	int SFM1_4 = 1;
 	int EFM1_4 = 1;
 	
+	Statistic statistic = new Statistic();
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,11 +112,21 @@ public class OnDrawActivity extends Activity {
         });
         clean.setOnClickListener(new OnClickListener(){
         	@Override  
-            public void onClick(View v) {  
+            public void onClick(View v) {
+        		//绘图清空
+        		drawView.clean();
+                //统计数据清空
+                statistic.cleanalldata();
+        		//轨迹清空
         		Arrays.fill(pointsLine, 0);
-        		StepTranslate[0] = screenWidth/2;
         		iLastIndex = 0;
+        		//红点回归
+        		StepTranslate[0] = screenWidth/2;
                 StepTranslate[1] = 100*every/2;
+                getdata[0] = screenWidth/2;
+                getdata[1] = 100*every/2;
+                //步数清零
+                SDCal.StepCount = 0;
             }  
         });
         
@@ -209,6 +221,13 @@ public class OnDrawActivity extends Activity {
 				if(angleTrans > -1)
 				{
 					drawView.ori_acc = angleTrans; 
+					//存储传感器方向和计算的方向和两个方向增量
+					drawView.ori_increment = statistic.cal_sto_oriincre(angleTrans, drawView.orientationA);
+					statistic.store_oriacc(angleTrans);
+					statistic.store_orisen(drawView.orientationA);
+					drawView.mean_orisensor = statistic.mean_orisen();
+					drawView.mean_oriacc = statistic.mean_oriacc();
+					
 					AngleSin = (float) Math.sin((angleTrans*PI)/180);
 					AngleCos = (float) Math.cos((angleTrans*PI)/180);
 					//GeneralTool.saveToSDcard(angleTrans,drawView.orientationA,"data_angel.txt");
@@ -313,12 +332,9 @@ public class OnDrawActivity extends Activity {
 		if((fValues[0]!=temp0)&&(fValues[1]!=temp1)&&
 				(fValues[0]!=0)&&(fValues[1]!=0)){
 			//数组扩容2倍
-			if(pointsLine.length < bufflength  && iLastIndex*4/3 >= pointsLine.length)
+			if(pointsLine.length < bufflength)
 			{
-				float temp[] = pointsLine;
-				pointsLine = new float[2*pointsLine.length];
-				for(int i = 0; i < temp.length; i++)
-					pointsLine[i] = temp[i];
+				pointsLine = GeneralTool.enlarge(pointsLine, iLastIndex);
 			}
 			if(iLastIndex <4)
 			{

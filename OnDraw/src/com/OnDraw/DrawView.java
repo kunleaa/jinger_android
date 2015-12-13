@@ -37,8 +37,13 @@ public class DrawView extends View {
 	float GyroscopeC = 0;
 	
 	float ori_acc = 0;
+	//估计的方向值减去传感器的方向值
+	float ori_increment = 0;
 	
 	float[] points1 = {0,0,0,0};
+	
+	float mean_orisensor = 0;
+	float mean_oriacc = 0;
 	
 	public DrawView(Context context) {
 	super(context);
@@ -69,13 +74,24 @@ public class DrawView extends View {
 		paint.setTextSize(50);
 		
 		canvas.drawLines(points1, paint);
+
+		canvas.drawText(String.valueOf(ori_acc), 10, 50, paint);
+		canvas.drawText(String.valueOf(orientationA), 300, 50, paint);
+		canvas.drawText(String.valueOf(ori_increment), 600, 50, paint);
 		
+		canvas.drawText(String.valueOf(mean_oriacc), 10, 100, paint);
+		canvas.drawText(String.valueOf(mean_orisensor), 300, 100, paint);
+		
+		canvas.drawText(String.valueOf(Step), 10, 150, paint);
+		
+		/*
 		//yaw
 		canvas.drawText(String.valueOf(orientationA), 10, 50, paint);
 		//pitch
 		canvas.drawText(String.valueOf(orientationB), 10, 100, paint);
 		//roll
 		canvas.drawText(String.valueOf(orientationC), 10, 150, paint);
+		*/
 		
 		/*//yaw
 		canvas.drawText(String.valueOf(orientationAA), 400, 50, paint);
@@ -93,14 +109,15 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(accelerationC), 10, 350, paint);
 		*/
 		
-		canvas.drawText(String.valueOf(ori_acc), 400, 300, paint);
-		
+		/*
 		//x
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateA)), 10, 500, paint);
 		//y
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateB)), 10, 550, paint);
 		//z
 		canvas.drawText(String.valueOf(Math.abs(AbsCoodinateC)), 10, 600, paint);
+		*/
+		
 		/*
 		if(AbsCoodinateA > 0)
 		{
@@ -138,7 +155,6 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(GyroscopeB), 10, 1000, paint);
 		canvas.drawText(String.valueOf(GyroscopeC), 10, 1050, paint);
 		*/
-		canvas.drawText(String.valueOf(Step), 400, 500, paint);
 		
 		/*canvas.drawText(String.valueOf(arraytest[0][0]), 10, 50, paint);
 		canvas.drawText(String.valueOf(arraytest[0][1]), 10, 100, paint);
@@ -205,6 +221,44 @@ public class DrawView extends View {
 			refreshcount++;
 			return ;
 		}
+	}
+	void clean()
+	{
+		refreshcount = 0;
+		paintX =0;
+		paintY =0;
+		radius =10;
+		points = new float[32];
+		
+		accelerationA =0;
+		accelerationB =0;
+		accelerationC =0;
+		
+		orientationA = 0;
+		orientationB = 0;
+		orientationC = 0;
+		
+		orientationAA = 0;
+		orientationBB = 0;
+		orientationCC = 0;
+		Step = 0;
+		
+		AbsCoodinateA = 0;
+		AbsCoodinateB = 0;
+		AbsCoodinateC = 0;
+		
+		GyroscopeA = 0;
+		GyroscopeB = 0;
+		GyroscopeC = 0;
+		
+		ori_acc = 0;
+		//估计的方向值减去传感器的方向值
+		ori_increment = 0;
+		
+		points1 = new float[4];
+		
+		mean_orisensor = 0;
+		mean_oriacc = 0;
 	}
 }
 

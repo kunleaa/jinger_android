@@ -113,4 +113,18 @@ public class GeneralTool{
 			e.printStackTrace();
 		}
 	}
+	
+	//À©Èİº¯Êı¡ª¡ªfloatÊı×é
+	static float[] enlarge(float [] array, int index)
+	{
+		float [] temp;
+		if(index*4/3 > array.length)
+		{
+			temp = array;
+			array = new float[2*array.length];
+			for(int i = 0; i < temp.length; i++)
+				array[i] = temp[i];
+		}
+		return array;
+	}
 }
