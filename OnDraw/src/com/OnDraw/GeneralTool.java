@@ -2,7 +2,10 @@ package com.OnDraw;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+
+import org.apache.http.util.EncodingUtils;
 
 import android.os.Environment;
 
@@ -19,6 +22,7 @@ public class GeneralTool{
 		    bw.write("\r\n"); 
 		    bw.flush();  
 		    System.out.println("写入成功");  	
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -33,7 +37,8 @@ public class GeneralTool{
 		    bw.write(info);
 		    bw.write("\r\n"); 
 		    bw.flush();  
-		    System.out.println("写入成功");  	
+		    System.out.println("写入成功");
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -49,6 +54,7 @@ public class GeneralTool{
 		    bw.write("\r\n"); 
 		    bw.flush();  
 		    System.out.println("写入成功");  	
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -64,6 +70,7 @@ public class GeneralTool{
 		    bw.write("\r\n"); 
 		    bw.flush();  
 		    System.out.println("写入成功");  	
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,7 +85,8 @@ public class GeneralTool{
 		    bw.write(info);
 		    bw.write("\r\n"); 
 		    bw.flush();  
-		    System.out.println("写入成功");  	
+		    System.out.println("写入成功");
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -93,7 +101,8 @@ public class GeneralTool{
 		    bw.write(info);
 		    bw.write("\r\n"); 
 		    bw.flush();  
-		    System.out.println("写入成功");  	
+		    System.out.println("写入成功");  
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -109,6 +118,7 @@ public class GeneralTool{
 		    bw.write("\r\n"); 
 		    bw.flush();  
 		    System.out.println("写入成功");  	
+		    bw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -126,5 +136,40 @@ public class GeneralTool{
 				array[i] = temp[i];
 		}
 		return array;
+	}
+	
+	//"config_ondraw.txt"
+	public static void read2vFromSDcard(String filename, int value[]){
+		int length;
+		String str;
+		String str_arr[];
+		try {			
+			File file = new File(Environment.getExternalStorageDirectory(),filename);
+			FileInputStream read = new FileInputStream(file);   
+			length = read.available();
+			byte [] buffer = new byte[length];
+			read.read(buffer); 
+			str = EncodingUtils.getString(buffer, "UTF-8");   
+			str_arr = str.split("\r\n");
+		    if(str_arr[0] != null)
+		    	value[0] = (int) Float.parseFloat(str_arr[0]);
+		    if(str_arr[1] != null)
+		    	value[1] = (int) Float.parseFloat(str_arr[1]);
+		    
+		    System.out.println("read成功");  	
+		    
+		    read.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static Boolean removefile(String filename)
+	{
+		File file = new File(Environment.getExternalStorageDirectory(),filename);
+        if (file.isFile() && file.exists()) {
+        return file.delete();
+        }
+        return false;
 	}
 }

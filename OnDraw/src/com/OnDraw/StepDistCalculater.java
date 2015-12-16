@@ -97,4 +97,26 @@ public class StepDistCalculater{
    		  }
 		return buchang;
 	}
+	
+	public void cleanall()
+	{
+		//当前最大值
+		MaxValue = 0;
+		//步数计数器
+		StepCount = 0;
+		//当前最大值下标
+		MaxValueIndex = 0;
+		//一步的距离
+		DistanceOneStep = 0;
+		//前一个最大值
+		PreMaxValue = 0;
+		//前一个最大值下标
+		PreMaxValueIndex = 0;
+		//前一个最小值
+		PreMinValue = 0;
+		//前一个最小值下标
+		PreMinValueIndex = 0;
+		//此时刻是否走出一步
+		isStep = 0;
+	}
 }

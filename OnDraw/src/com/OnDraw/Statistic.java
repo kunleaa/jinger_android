@@ -73,40 +73,41 @@ public class Statistic{
 	{
 		int index = 0;
 		float sum = 0;
-		int count_right = 0;
+		int count_left = 0;
 		for(;index < count;index++)
 		{
 			sum = sum + array[index];
 		}
 		//弥补丢失的度数 比如 一个是1度一个是359度 正确的是0 但是上面计算下来是180
-		count_right = iscontainzero(array,count);
-		sum = sum + count_right*360;
+		//如果包含0方向，返回在0到90度之间的个数
+		count_left = iscontainzero(array,count);
+		sum = sum + count_left*360;
 		sum = sum / count;
 		sum = sum % 360;
 		return sum;
 	}
 	
-	//方向范围中是否包含0度 返回在0到179度范围内的方向个数
+	//方向范围中是否包含0度 返回在0到90度范围内的方向个数
 	int iscontainzero(float [] array,int count)
 	{
-		//359到180为左
-		int count_left = 0;
-		//0到179为右
+		//359到270为右
 		int count_right = 0;
+		//0到90为左
+		int count_left = 0;
 		int index = 0;
 		for(;index < count;index++)
 		{
-			if(array[index] >= 0 && array[index] < 180)
-			{
-				count_right++;
-			}
-			else
+			if(array[index] >= 0 && array[index] < 90)
 			{
 				count_left++;
 			}
+			else if(array[index] >= 270 && array[index] < 360)
+			{
+				count_right++;
+			}
 		}
-		if(count_right != 0 && count_left != 0)
-			return count_right;
+		if(count_left != 0 && count_right != 0)
+			return count_left;
 		else
 			return 0;
 	}

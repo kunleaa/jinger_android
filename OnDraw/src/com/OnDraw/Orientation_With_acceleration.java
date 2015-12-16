@@ -94,19 +94,4 @@ public class Orientation_With_acceleration
 		
 		return index;
 	}
-	
-	//interval积分间隔
-	//PF提供长度
-	//SDC提供积分下标
-	//Xbuff Ybuff 提供被积分函数值 程序待实现
-	public float Orient(PeakFinder PF, StepDistCalculater SDC, int interval)
-	{
-		float volecity_X;
-		float volecity_Y;
-		volecity_X = Integrate.intgt_circle(PF.fArray3, 1, 2, 0, interval, PF.bufflength3);
-		volecity_Y = Integrate.intgt_circle(PF.fArray3, 1, 2, 0, interval, PF.bufflength3);
-		
-		//随便写的返回值
-		return volecity_X/volecity_Y;
-	}
 }

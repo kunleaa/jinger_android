@@ -105,8 +105,14 @@ public class OnDrawActivity extends Activity {
         press.setOnClickListener(new OnClickListener() {  
             @Override  
             public void onClick(View v) {  
+            	//从界面获取参数
             	SFM1_4 = Integer.parseInt(edit_start.getText().toString());  
             	EFM1_4 = Integer.parseInt(edit_end.getText().toString());
+            	//存储参数
+            	GeneralTool.removefile("config_ondraw.txt");
+            	GeneralTool.saveToSDcard(SFM1_4,"config_ondraw.txt");
+            	GeneralTool.saveToSDcard(EFM1_4,"config_ondraw.txt");
+            	//隐藏键盘
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
             }  
         });
@@ -117,6 +123,16 @@ public class OnDrawActivity extends Activity {
         		drawView.clean();
                 //统计数据清空
                 statistic.cleanalldata();
+                //PeakFinder清空
+            	PeFin.cleanall();
+            	PeFin_X.cleanall();
+            	PeFin_Y.cleanall();
+            	//Filter清空
+            	FilterOfAccX.cleanall();
+            	FilterOfAccY.cleanall();
+            	FilterOfAccZ.cleanall();
+            	//StepDistCalculater清空
+            	SDCal.cleanall();
         		//轨迹清空
         		Arrays.fill(pointsLine, 0);
         		iLastIndex = 0;
@@ -129,6 +145,13 @@ public class OnDrawActivity extends Activity {
                 SDCal.StepCount = 0;
             }  
         });
+        
+        int rfdata[] = {0,0};
+        GeneralTool.read2vFromSDcard("config_ondraw.txt", rfdata);
+        SFM1_4 = rfdata[0];
+        EFM1_4 = rfdata[1];
+        edit_start.setText(""+rfdata[0]);
+        edit_end.setText(""+rfdata[1]);
         
         layout = (LinearLayout)  findViewById(R.id.layout);//找到这个空间
         drawView = new DrawView(this);//创建自定义的控件
@@ -145,7 +168,7 @@ public class OnDrawActivity extends Activity {
         screenWidth = dm.widthPixels;   
         screenHeight = dm.heightPixels;
         every = screenHeight/108;
-       StepTranslate[0] = screenWidth/2;
+        StepTranslate[0] = screenWidth/2;
         StepTranslate[1] = 100*every/2;
         //StepTranslate[0] = screenWidth/2;
          //StepTranslate[1] = 8*every;
@@ -164,8 +187,8 @@ public class OnDrawActivity extends Activity {
     	manager.registerListener(listener, orientation, SensorManager.SENSOR_DELAY_GAME);
     	
     	//监听陀螺仪传感器
-    	Sensor gyroscope = manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-    	manager.registerListener(listener, gyroscope, SensorManager.SENSOR_DELAY_GAME);
+    	//Sensor gyroscope = manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+    	//manager.registerListener(listener, gyroscope, SensorManager.SENSOR_DELAY_GAME);
     	
     	// 初始化地磁场传感器
     	Sensor magnetic = manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -230,8 +253,10 @@ public class OnDrawActivity extends Activity {
 					
 					AngleSin = (float) Math.sin((angleTrans*PI)/180);
 					AngleCos = (float) Math.cos((angleTrans*PI)/180);
-					//GeneralTool.saveToSDcard(angleTrans,drawView.orientationA,"data_angel.txt");
-					//GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex,"data_minindex.txt");
+					/*GeneralTool.saveToSDcard(angleTrans,drawView.orientationA,"data_angel.txt");
+					GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex,
+											 SDCal.PreMaxValueIndex < SDCal.PreMinValueIndex ? (PeFin.Circle*PeFin.bufflength3 + SDCal.PreMaxValueIndex):((PeFin.Circle-1)*PeFin.bufflength3 + SDCal.PreMaxValueIndex),
+											"data_min_max_index.txt");*/
 				}
 				drawView.Step = SDCal.StepCount;
 			}
@@ -261,10 +286,10 @@ public class OnDrawActivity extends Activity {
 				AngleSin = (float) Math.sin((angleTrans*PI)/180);
 				AngleCos = (float) Math.cos((angleTrans*PI)/180);*/
 			}
-			else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
+			/*else if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE){
 				float [] GyroValue = event.values;
 				//drawView.SetGyroscope_1(GyroValue[0], GyroValue[1], GyroValue[2]);
-			}
+			}*/
 			else if(event.sensor.getType()==Sensor.TYPE_MAGNETIC_FIELD)
 			{
 				magneticFieldValues = event.values;
@@ -372,9 +397,6 @@ public class OnDrawActivity extends Activity {
 		// TODO Auto-generated method stub
 		switch (item.getItemId()) {
 		case R.id.set:
-			//Intent intent = new Intent();
-			//intent.setClass(OnDrawActivity.this, NewActivityActivity.class);
-			//startActivity(intent);
 			break;
 		default:
 			break;

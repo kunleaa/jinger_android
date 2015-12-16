@@ -57,4 +57,10 @@ public class Filter{
 		AverageFilteringProcess(fValue, M, AveSecondData);
 		return AveSecondData.Average;
 	}
+	
+	public void cleanall()
+	{
+		AveFirstData = new AverageData();
+		AveSecondData = new AverageData();
+	}
 }

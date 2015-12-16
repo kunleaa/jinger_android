@@ -94,4 +94,27 @@ public class PeakFinder{
 		iLastIndex3 = (++iLastIndex3)%bufflength3 ;
 		fArray3[iLastIndex3] = fValue;
 	}
+	
+	public void cleanall()
+	{
+		fArray3 = new float[100];
+		iLastIndex3 = -1;
+		iIsHundred3 = 0;
+		
+		//缓冲区长度定位80，保证至少可以容纳下两个波峰波谷
+		bufflength3 = 80;
+
+		//极大值极小值标志
+		isPeak = 0;
+		//极大值角标
+		MPeak = 0;
+		//极小值角标
+		LPeak = 0;
+		//极大值
+		MPeakIndex = 0;
+		//极小值
+		LPeakIndex = 0;
+		//记录缓冲区溢出多少次
+		Circle = 0;
+	}
 }
