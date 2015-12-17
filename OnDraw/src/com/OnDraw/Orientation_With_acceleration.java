@@ -7,7 +7,7 @@ public class Orientation_With_acceleration
 	{
 		float value = -1;
 		float acc[] = new float[2];
-		if(SDCal.isStep == 1)
+		if(SDCal.isStep == true)
 		{
 			//取波峰波谷中点的加速度
 			//acc = acc_middle(PF, SDCal, Acc_X, Acc_Y);

@@ -18,11 +18,11 @@ public class StepDistCalculater{
 	//前一个最小值下标
 	int PreMinValueIndex = 0;
 	//此时刻是否走出一步
-	int isStep = 0;
+	boolean isStep = false;
 	
 	public void CalcuStepDist(PeakFinder PeFin)
 	{
-		isStep = 0;
+		isStep = false;
 		//不是极值
 		if(0 == (int)PeFin.isPeak)
 		{
@@ -53,7 +53,7 @@ public class StepDistCalculater{
 				if(6 < (PeFin.LPeakIndex - MaxValueIndex + PeFin.bufflength3)%PeFin.bufflength3)
 				{
 					//这个时刻跨出一步
-					isStep = 1;
+					isStep = true;
 					//保存本次有效的极小值
 					PreMinValue = PeFin.LPeak;
 					PreMinValueIndex = PeFin.LPeakIndex;
@@ -117,6 +117,6 @@ public class StepDistCalculater{
 		//前一个最小值下标
 		PreMinValueIndex = 0;
 		//此时刻是否走出一步
-		isStep = 0;
+		isStep = false;
 	}
 }
