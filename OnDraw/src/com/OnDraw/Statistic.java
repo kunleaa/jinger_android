@@ -8,6 +8,101 @@ public class Statistic{
 	float [] ori_incre  = new float[32];
 	int index_incre = 0;
 	
+	//T(时间,30步) I(间隔0,5) S(起始位置,-5,5) 
+	float [][][][] ori_acc_cali_T_I_S = new float[2][30][5][10];
+	float [][] ori_sensor_cali =new float[2][30];
+	
+	float[][][] ori_meanacc_I_S = new float [2][5][10];
+	float[] ori_meansensor_I_S = new float[2];
+	int count_calibrate = 0;
+	//记录数组中满足要求的下标
+	int ori_param[][];
+	float ori_increment_calibrate[][];
+	int count_pa;
+	
+	public void store_orisen_calibrate(int c,int t, float value)
+	{
+		ori_sensor_cali[c%2][t%30] = value;
+	}
+	
+	public void store_oriacc_calibrate(int c,int t,int i,int s, float value)
+	{
+		//步数大于30时循环存储
+		ori_acc_cali_T_I_S[c%2][t%30][i][s]= value;
+	}
+	
+	//传感器方向平均值
+	public void mean_orisen_calibrate(int c, int t)
+	{
+		ori_meansensor_I_S[c] = average_orient(ori_sensor_cali[c],t>=30?30:t);
+	}
+	
+	//加速度计算方向平均值
+	public void mean_oriacc_calibrate(int c, int t)
+	{
+		float[] ori_acc_T = new float[t];
+		int length = t>=30?30:t;
+		
+		for(int interal = 0; interal < 6; interal++)
+		{
+			for(int start=0; start < 10; start++)
+			{
+				for(int step = 0;step < length; step++)
+				{
+					ori_acc_T[step] = ori_acc_cali_T_I_S[c][step][interal][start];
+				}
+				ori_meanacc_I_S[c][interal][start] = average_orient(ori_acc_T,length);
+			}
+		}
+	}
+	
+	public void calcu_orientparam()
+	{
+		float increment = ori_meansensor_I_S[0]-ori_meansensor_I_S[1];
+		
+		ori_increment_calibrate = new float[5][10];
+		ori_param = new int[20][2];
+		count_pa=0;
+		
+		for(int interal = 0; interal < 5; interal++)
+		{
+			for(int start=0; start < 10; start++)
+			{
+				ori_increment_calibrate[interal][start] = ori_meanacc_I_S[0][interal][start] - ori_meanacc_I_S[1][interal][start] - increment;
+				if(ori_increment_calibrate[interal][start] < 10)
+				{
+					ori_param[count_pa][0] =interal;
+					ori_param[count_pa][1] =start;
+					count_pa++;
+				}
+			}
+		}
+	}
+	
+	public int[] getoneparam()
+	{
+		int i=0;
+		//优先返回长度为4的参数
+		for(i=0; i < count_pa; i++)
+		{
+			if(ori_param[i][0] == 3)
+				return ori_param[i];
+		}
+		//其次返回长度为3的参数
+		for(i=0; i < count_pa; i++)
+		{
+			if(ori_param[i][0] == 2)
+				return ori_param[i];
+		}
+		//否侧返回第一个
+		for(i=0; i < count_pa; i++)
+		{
+			if(ori_param[i][0] != 0 && ori_param[i][1] != 0)
+				return ori_param[i];
+		}
+		return null;
+	}
+	
 	public void store_orisen(float value)
 	{
 		ori_sensor = GeneralTool.enlarge(ori_sensor,index_sensor);
@@ -120,5 +215,13 @@ public class Statistic{
 		index_acc = 0;
 		ori_incre  = new float[32];
 		index_incre = 0;
+		
+		//T(时间,30步) I(间隔0,5) S(起始位置,-5,5) 
+		ori_acc_cali_T_I_S = new float[2][30][5][10];
+		ori_sensor_cali =new float[2][30];
+		
+		ori_meanacc_I_S = new float [2][5][10];
+		ori_meansensor_I_S = new float[2];
+		count_calibrate = 0;
 	}
 }

@@ -17,15 +17,14 @@
         android:layout_width="fill_parent" 
         android:layout_height="35dp" 
         android:gravity="top">
-       	    <Button
-            android:id="@+id/btn_mode"
-            android:layout_width="fill_parent"
-            android:layout_height="30dp"
-            android:layout_weight="1"
-            android:text="MODE"
-            android:textSize="11dp"
-            android:layout_gravity="top"
-            android:layout_marginTop="0dp"/>
+       	    
+			<EditText
+	        android:id="@+id/btn_mode"   
+	    	android:layout_width="fill_parent"  
+	    	android:layout_height="35dp"  
+	    	android:layout_weight="1"
+	    	android:textSize="14dp"
+	    	android:digits = "ncNC"/>
        	    
 	        <EditText
 	        android:id="@+id/edit_start"   
