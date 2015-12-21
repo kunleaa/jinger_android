@@ -43,7 +43,7 @@ public class Statistic{
 		float[] ori_acc_T = new float[t];
 		int length = t>=30?30:t;
 		
-		for(int interal = 0; interal < 6; interal++)
+		for(int interal = 0; interal < 5; interal++)
 		{
 			for(int start=0; start < 10; start++)
 			{
@@ -69,7 +69,7 @@ public class Statistic{
 			for(int start=0; start < 10; start++)
 			{
 				ori_increment_calibrate[interal][start] = ori_meanacc_I_S[0][interal][start] - ori_meanacc_I_S[1][interal][start] - increment;
-				if(ori_increment_calibrate[interal][start] < 10)
+				if(Math.abs(ori_increment_calibrate[interal][start]) < 10)
 				{
 					ori_param[count_pa][0] =interal;
 					ori_param[count_pa][1] =start;
@@ -82,7 +82,7 @@ public class Statistic{
 	public int[] getoneparam()
 	{
 		int i=0;
-		//优先返回长度为4的参数
+		//优先返回长度为4(间隔为3)的参数
 		for(i=0; i < count_pa; i++)
 		{
 			if(ori_param[i][0] == 3)

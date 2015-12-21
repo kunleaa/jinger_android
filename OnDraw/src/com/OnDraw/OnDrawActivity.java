@@ -268,9 +268,6 @@ public class OnDrawActivity extends Activity {
 		Statistic statistic = new Statistic();
 		float angleTrans = 0;
 		
-		//T(时间,30步) I(间隔0,5) S(起始位置,-5,5) 
-		float [][][][] oridata_T_I_S_first = new float[2][30][10][5];
-		float [][][][] oridata_T_I_S_second = new float[2][30][10][5];
 		int count_step = 0;
 		int count_cali = 0;
 		
@@ -336,15 +333,19 @@ public class OnDrawActivity extends Activity {
 		void end_calibrate(Config cf,EditText es, EditText ee)
 		{
 			int temp[];
+			if(count_step <= 0)
+				return;
+			
 			statistic.mean_orisen_calibrate(count_cali, count_step);
 			statistic.mean_oriacc_calibrate(count_cali, count_step);
 			statistic.calcu_orientparam();
 			temp = statistic.getoneparam();
 			
-			cf.SFM1_4 = temp[1];
-			cf.EFM1_4 = temp[1]+temp[0];
+			cf.SFM1_4 = temp[1]-5;
+			cf.EFM1_4 = temp[1]-5+temp[0];
 	        es.setText(""+cf.SFM1_4);
 	        ee.setText(""+cf.EFM1_4);
+	        count_step = 0;
 			count_cali++;
 		}
 		
@@ -370,9 +371,7 @@ public class OnDrawActivity extends Activity {
         	FilterOfAccZ.cleanall();
         	//StepDistCalculater清空
         	SDCal.cleanall();
-        	
-        	oridata_T_I_S_first = new float[2][30][10][5];
-    		oridata_T_I_S_second = new float[2][30][10][5];
+
     		count_step = 0;
     		count_cali = 0;
     		
@@ -535,6 +534,7 @@ public class OnDrawActivity extends Activity {
 				{
 					//配置从视图存储到sd卡
 		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode);
+		        	((Button)v).setText("PRESS");
 				}
 				else
 				{
