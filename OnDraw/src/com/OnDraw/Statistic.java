@@ -65,7 +65,6 @@ public class Statistic{
 		ori_increment_calibrate = new float[5][10];
 		ori_param = new int[50][2];
 		count_pa=0;
-		
 		for(int interal = 0; interal < 5; interal++)
 		{
 			for(int start=0; start < 10; start++)
@@ -75,32 +74,37 @@ public class Statistic{
 				{
 					ori_param[count_pa][0] =interal;
 					ori_param[count_pa][1] =start;
+					GeneralTool.saveToSDcard(start-5, start-5+interal, "AvaiParam.txt");
 					count_pa++;
 				}
 			}
 		}
+		GeneralTool.saveToSDcard(111111, 111111, "AvaiParam.txt");
 	}
-	
+	//最理想的是选取波动最稳定且误差最小的参数，后边要添加该功能
 	public int[] getoneparam()
 	{
-		int i=0;
-		//优先返回长度为4(间隔为3)的参数
-		for(i=0; i < count_pa; i++)
+		int i;
+		if(count_pa > 0)
 		{
-			if(ori_param[i][0] == 3)
-				return ori_param[i];
-		}
-		//其次返回长度为3的参数
-		for(i=0; i < count_pa; i++)
-		{
-			if(ori_param[i][0] == 2)
-				return ori_param[i];
-		}
-		//否侧返回第一个
-		for(i=0; i < count_pa; i++)
-		{
-			if(ori_param[i][0] != 0 && ori_param[i][1] != 0)
-				return ori_param[i];
+			//优先返回长度为4(间隔为3)的参数
+			for(i=count_pa-1; i >= 0; i--)
+			{
+				if(ori_param[i][0] == 3)
+					return ori_param[i];
+			}
+			//其次返回长度为3的参数
+			for(i=count_pa-1; i >= 0; i--)
+			{
+				if(ori_param[i][0] == 2)
+					return ori_param[i];
+			}
+			//否侧返回第一个
+			for(i=count_pa-1; i >= 0; i--)
+			{
+				if(ori_param[i][0] != 0 && ori_param[i][1] != 0)
+					return ori_param[i];
+			}
 		}
 		return null;
 	}
