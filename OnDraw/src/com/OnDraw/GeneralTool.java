@@ -139,7 +139,7 @@ public class GeneralTool{
 	}
 	
 	//"config_ondraw.txt"
-	public static void read2vFromSDcard_3value(String filename, int value[]){
+	public static void read2vFromSDcard_4value(String filename, float value[]){
 		int length;
 		String str;
 		String str_arr[];
@@ -152,11 +152,13 @@ public class GeneralTool{
 			str = EncodingUtils.getString(buffer, "UTF-8");   
 			str_arr = str.split("\r\n");
 		    if(str_arr[0] != null)
-		    	value[0] = (int) Float.parseFloat(str_arr[0]);
+		    	value[0] = Float.parseFloat(str_arr[0]);
 		    if(str_arr[1] != null)
-		    	value[1] = (int) Float.parseFloat(str_arr[1]);
+		    	value[1] = Float.parseFloat(str_arr[1]);
 		    if(str_arr[2] != null)
-		    	value[2] = (int) Float.parseFloat(str_arr[2]);
+		    	value[2] = Float.parseFloat(str_arr[2]);
+		    if(str_arr[3] != null)
+		    	value[3] = Float.parseFloat(str_arr[3]);
 		    
 		    System.out.println("read³É¹¦");  	
 		    

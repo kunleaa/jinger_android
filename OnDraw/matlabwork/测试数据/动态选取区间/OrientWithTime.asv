@@ -1,0 +1,18 @@
+function [orintation] = orientwithtime(maxindex,minindex,acc_x,acc_y,start,endd) 
+X = 0;
+Y = 1;
+index_1_4 = floor(((maxindex+minindex)/2+maxindex)/2);
+start = index_1_4+start;
+endd = index_1_4+endd;
+acc(X) = mean(acc_x(start:endd));
+acc(Y) = mean(acc_y(start:endd));
+if acc(Y) <= 0 & acc(X) <= 0
+    value = (float) ((-acc(Y))/sqrt((pow(acc(Y), 2) + pow(acc(X), 2))));
+    value = (float)(toDegrees(asin(value)));
+elseif acc(X) >= 0
+    value = (float)(acc(Y)/sqrt((pow(acc(Y), 2) + pow(acc(X), 2))));
+    value = (float)(toDegrees(PI + asin(value)));
+elseif acc(Y) >= 0 & acc(X) <= 0 
+    value = (float)(acc(Y)/sqrt((pow(acc(Y), 2) + pow(acc(X), 2))));
+    value = (float)(toDegrees(PI*3/2 + asin(value)));
+end

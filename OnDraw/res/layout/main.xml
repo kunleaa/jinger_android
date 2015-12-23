@@ -44,6 +44,15 @@
 	    	android:textSize="14dp"
 	    	android:numeric="signed"/>
 
+	        <EditText
+	        android:id="@+id/edit_stepparam"   
+	    	android:layout_width="fill_parent"  
+	    	android:layout_height="35dp"  
+	    	android:layout_weight="1"
+	    	android:text="0.1737"
+	    	android:textSize="14dp"
+	    	android:numeric="decimal"/>
+	        
 	        <Button
 	            android:id="@+id/btn_get_value"
 	            android:layout_width="fill_parent"

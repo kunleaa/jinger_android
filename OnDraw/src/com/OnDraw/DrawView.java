@@ -27,6 +27,7 @@ public class DrawView extends View {
 	float orientationBB = 0;
 	float orientationCC = 0;
 	float Step = 0;
+	float distance = 0;
 	
 	float AbsCoodinateA = 0;
 	float AbsCoodinateB = 0;
@@ -82,6 +83,7 @@ public class DrawView extends View {
 		canvas.drawText(String.valueOf(mean_orisensor), 300, 100, paint);
 		
 		canvas.drawText(String.valueOf(Step), 10, 150, paint);
+		canvas.drawText(String.valueOf(distance), 300, 150, paint);
 		
 	}
 	

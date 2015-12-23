@@ -20,7 +20,7 @@ public class StepDistCalculater{
 	//此时刻是否走出一步
 	boolean isStep = false;
 	
-	public void CalcuStepDist(PeakFinder PeFin)
+	public void CalcuStepDist(PeakFinder PeFin, float K)
 	{
 		isStep = false;
 		//不是极值
@@ -59,7 +59,7 @@ public class StepDistCalculater{
 					PreMinValueIndex = PeFin.LPeakIndex;
 					//计算上一步的距离
 					//DistanceOneStep = calculatedistance(PeFin);
-					DistanceOneStep = (float) Math.pow((MaxValue - PreMinValue), 1.0/4);
+					DistanceOneStep = (float) (K * Math.pow((MaxValue - PreMinValue), 1.0/4));
 					//generalTool.saveToSDcard(DistanceOneStep);
 					
 					//保存本次的最大值，为下次计算距离做准备

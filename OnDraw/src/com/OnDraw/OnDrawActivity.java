@@ -30,6 +30,7 @@ public class OnDrawActivity extends Activity {
     EditText edit_mode;
 	EditText edit_start;
 	EditText edit_end;
+	EditText edit_stepparam;
 	
 	//传感器设备相关
 	private SensorManager manager;
@@ -63,12 +64,13 @@ public class OnDrawActivity extends Activity {
         edit_mode = (EditText)findViewById(R.id.btn_mode);
         edit_start = (EditText)findViewById(R.id.edit_start);
         edit_end = (EditText)findViewById(R.id.edit_end);
+        edit_stepparam = (EditText)findViewById(R.id.edit_stepparam);
 
         press.setOnClickListener(new OCL_Press());
         clean.setOnClickListener(new OCL_Clean());
         
         //从sd卡读配置并显示到界面
-        config.Read_SDtoView(edit_start,edit_end,edit_mode);
+        config.Read_SDtoView(edit_start,edit_end,edit_mode,edit_stepparam);
         //传感器管理服务
         manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         
@@ -115,6 +117,7 @@ public class OnDrawActivity extends Activity {
 				drawView.points1 = trajectory.getpath(para_map);
 				
 				drawView.Step = trajectory.stepcount;
+				drawView.distance = trajectory.distance;
 		        drawView.paintX=trajectory.StepTranslate[0];
 				drawView.paintY=trajectory.StepTranslate[1];
 				drawView.radius = para_map.every;
@@ -211,7 +214,7 @@ public class OnDrawActivity extends Activity {
 			PeFin_X.StoreValue(AbsCoodinate_filt[0]);
 			PeFin_Y.StoreValue(AbsCoodinate_filt[1]);
 			//计算步长和步数，记步也是正确的
-			SDCal.CalcuStepDist(PeFin);
+			SDCal.CalcuStepDist(PeFin,config.STEP_PARAM);
 			angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3, config.SFM1_4, config.EFM1_4);
 			//GeneralTool.saveToSDcard(angleTrans);
 			if(angleTrans > -1)
@@ -301,7 +304,7 @@ public class OnDrawActivity extends Activity {
 			PeFin_X.StoreValue(AbsCoodinate_filt[0]);
 			PeFin_Y.StoreValue(AbsCoodinate_filt[1]);
 			//计算步长和步数，记步也是正确的
-			SDCal.CalcuStepDist(PeFin);
+			SDCal.CalcuStepDist(PeFin,config.STEP_PARAM);
 			
 			if(SDCal.isStep == true)
 			{
@@ -340,6 +343,8 @@ public class OnDrawActivity extends Activity {
 			statistic.mean_oriacc_calibrate(count_cali, count_step);
 			statistic.calcu_orientparam();
 			temp = statistic.getoneparam();
+			if(temp == null)
+				temp = new int[] {0,-100};
 			
 			cf.SFM1_4 = temp[1]-5;
 			cf.EFM1_4 = temp[1]-5+temp[0];
@@ -347,6 +352,12 @@ public class OnDrawActivity extends Activity {
 	        ee.setText(""+cf.EFM1_4);
 	        count_step = 0;
 			count_cali++;
+			if(count_cali == 2)
+			{
+	            //统计数据清空
+	            statistic.cleanalldata();
+	            count_cali=0;
+			}
 		}
 		
 		void give_trajectinfo(Trajectory tjctr)
@@ -381,10 +392,6 @@ public class OnDrawActivity extends Activity {
 	
 	//轨迹存储，为绘图准备
 	public class Trajectory{
-		//步长参数
-		final double K = 0.1737;
-		//double K = 0.2314;
-		//double K = 0.1489;
 		final double PI = 3.1415926;
 		
 		//绘图需要的一些信息
@@ -402,7 +409,7 @@ public class OnDrawActivity extends Activity {
 		int bufflength = 1024; 
 		float[] pointsLine = new float[32];
 		//总长度
-		double distance = 0;
+		float distance = 0;
 		
 		float[] getpath(Parameter_Map pm)
 		{
@@ -432,11 +439,11 @@ public class OnDrawActivity extends Activity {
 		
 		public void Trans(float DistOneStep,float unit){
 				//人员行走在手机宽度方向的变化
-				StepTranslate[0] = StepTranslate[0] -	(float) ((K*DistOneStep*AngleCos)/0.33)*unit;
+				StepTranslate[0] = StepTranslate[0] -	(float) ((DistOneStep*AngleCos)/0.33)*unit;
 				//人员行走在手机高度方向的变化
-				StepTranslate[1] = StepTranslate[1] + (float) ((K*DistOneStep*AngleSin)/0.33)*unit;
+				StepTranslate[1] = StepTranslate[1] + (float) ((DistOneStep*AngleSin)/0.33)*unit;
 				//行走的距离
-				distance =distance+K*DistOneStep;
+				distance =distance+DistOneStep;
 		}
 		
 		public void GetPointsLine(){
@@ -484,15 +491,21 @@ public class OnDrawActivity extends Activity {
 		//startFromMiddle1p4
 		int SFM1_4;
 		int EFM1_4;
+		//当前运行模式
 		int MODE;
+		//步长参数
+		//STEP_PARAM 0.1737,0.2314,0.1489;
+		float STEP_PARAM;
+		
 		String file_config = "config_ondraw.txt";
 		
-		public void Read_ViewtoSD(EditText es,EditText ee,EditText md)
+		public void Read_ViewtoSD(EditText es,EditText ee,EditText md, EditText sp)
 		{
         	//从界面获取参数
         	MODE =  md.getText().toString().equalsIgnoreCase("c") == true ? Function_app.CALIBRATE:Function_app.NAVIGATE;
         	SFM1_4 = Integer.parseInt(es.getText().toString());  
         	EFM1_4 = Integer.parseInt(ee.getText().toString());
+        	STEP_PARAM = Float.parseFloat(sp.getText().toString());
         	//提示信息
         	md.setText("");
         	md.setHint(Function_app.name_mode[MODE]);
@@ -502,17 +515,21 @@ public class OnDrawActivity extends Activity {
         	GeneralTool.saveToSDcard(SFM1_4,file_config);
         	GeneralTool.saveToSDcard(EFM1_4,file_config);
         	GeneralTool.saveToSDcard(MODE,file_config);
+        	GeneralTool.saveToSDcard(STEP_PARAM,file_config);
 		}
 		
-		public void Read_SDtoView(EditText es,EditText ee, EditText md)
+		public void Read_SDtoView(EditText es,EditText ee, EditText md, EditText sp)
 		{
-	        int rfdata[] = {0,0,0};
-	        GeneralTool.read2vFromSDcard_3value(file_config, rfdata);
-	        SFM1_4 = rfdata[0];
-	        EFM1_4 = rfdata[1];
-	        MODE = rfdata[2];
-	        es.setText(""+rfdata[0]);
-	        ee.setText(""+rfdata[1]);
+	        float rfdata[] = {0,0,0,(float) 0.1737};
+	        GeneralTool.read2vFromSDcard_4value(file_config, rfdata);
+	        SFM1_4 = (int)rfdata[0];
+	        EFM1_4 = (int)rfdata[1];
+	        MODE = (int)rfdata[2];
+	        STEP_PARAM = rfdata[3];
+	        
+	        es.setText(""+SFM1_4);
+	        ee.setText(""+EFM1_4);
+	        sp.setText(""+STEP_PARAM);
         	//提示信息
         	md.setText("");
 	        md.setHint(Function_app.name_mode[MODE]);
@@ -526,14 +543,14 @@ public class OnDrawActivity extends Activity {
 			if(config.MODE == function_app.NAVIGATE)
 			{
 	        	//配置从视图存储到sd卡
-	        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode);
+	        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam);
 			}
 			else
 			{
 				if(function_app.NAVIGATE == (edit_mode.getText().toString().equalsIgnoreCase("n") == true ? Function_app.NAVIGATE:Function_app.CALIBRATE))
 				{
 					//配置从视图存储到sd卡
-		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode);
+		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam);
 		        	((Button)v).setText("PRESS");
 				}
 				else

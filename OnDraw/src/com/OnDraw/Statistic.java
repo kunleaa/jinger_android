@@ -34,14 +34,16 @@ public class Statistic{
 	//传感器方向平均值
 	public void mean_orisen_calibrate(int c, int t)
 	{
+		c = c%2;
 		ori_meansensor_I_S[c] = average_orient(ori_sensor_cali[c],t>=30?30:t);
 	}
 	
 	//加速度计算方向平均值
 	public void mean_oriacc_calibrate(int c, int t)
 	{
-		float[] ori_acc_T = new float[t];
+		c = c%2;
 		int length = t>=30?30:t;
+		float[] ori_acc_T = new float[length];
 		
 		for(int interal = 0; interal < 5; interal++)
 		{
@@ -61,7 +63,7 @@ public class Statistic{
 		float increment = ori_meansensor_I_S[0]-ori_meansensor_I_S[1];
 		
 		ori_increment_calibrate = new float[5][10];
-		ori_param = new int[20][2];
+		ori_param = new int[50][2];
 		count_pa=0;
 		
 		for(int interal = 0; interal < 5; interal++)
