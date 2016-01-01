@@ -16,9 +16,11 @@ public class Orientation_With_acceleration
 			//取波峰与波谷之间加速的平均值
 			//acc[X] = acc_average(Acc_X,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
 			//acc[Y] = acc_average(Acc_Y,SDCal.PreMaxValueIndex, SDCal.PreMinValueIndex, PF.bufflength3);
-			//取波谷和波峰四分之一处，前两个到后两个之间的平均值
+			//取波谷和波峰四分之一（因为在此处的数据比较稳定）处，前两个到后两个之间的平均值
 			int index1p4 = midindex(SDCal.PreMaxValueIndex, midindex(PF, SDCal), PF.bufflength3);
+			
 			//下标减2之后有可能越界，所以要加上bufflength3，再取余
+			//找出能代表行人方向的区间（加速度坐标系中）
 			int start = (index1p4+sfm1_4+PF.bufflength3)%PF.bufflength3;
 			int end = (index1p4+efm1_4+PF.bufflength3)%PF.bufflength3;
 			acc[X] = acc_average(Acc_X, start, end, PF.bufflength3);

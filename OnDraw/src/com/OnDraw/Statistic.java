@@ -1,6 +1,6 @@
 package com.OnDraw;
 public class Statistic{
-	
+	/***************************导航用到的方向数据***************************/
 	float [] ori_sensor = new float[32];
 	int index_sensor = 0;
 	float [] ori_acc  = new float[32];
@@ -8,18 +8,69 @@ public class Statistic{
 	float [] ori_incre  = new float[32];
 	int index_incre = 0;
 	
+	/***************************方向校准用到的数据***************************/
 	//T(时间,30步) I(间隔0,5) S(起始位置,-5,5) 
 	float [][][][] ori_acc_cali_T_I_S = new float[2][30][5][10];
 	float [][] ori_sensor_cali =new float[2][30];
-	
 	float[][][] ori_meanacc_I_S = new float [2][5][10];
 	float[] ori_meansensor_I_S = new float[2];
 	int count_calibrate = 0;
+	
 	//记录数组中满足要求的下标
 	int ori_param[][];
 	float ori_increment_calibrate[][];
 	int count_pa;
 	
+	/***************************步长校准用到的数据***************************/
+	//每一步的波峰值和下标
+	float [] crest_value = new float[32];
+	int [] crest_index = new int [32];
+	int crest_count = 0;
+	//每一步的波谷值和下标
+	float [] valley_value = new float [32];
+	int [] valley_index = new int [32];
+	int valley_count = 0;
+	
+	/***************************步长校准用到的接口***************************/
+	public void store_crest(float cv, int ci)
+	{
+		//扩容
+		crest_value = GeneralTool.enlarge_float(crest_value, crest_count);
+		crest_index = GeneralTool.enlarge_int(crest_index, crest_count);
+		
+		crest_value[crest_count] = cv;
+		crest_index[crest_count] = ci;
+		crest_count++;
+	}
+	
+	public void store_valley(float vv, int vi)
+	{
+		//扩容
+		valley_value = GeneralTool.enlarge_float(valley_value, valley_count);
+		valley_index = GeneralTool.enlarge_int(valley_index, valley_count);
+		
+		valley_value[valley_count] = vv;
+		valley_index[valley_count] = vi;
+		valley_count++;
+	}
+	
+	public float calcu_stepdisparam_byWeinberg(float distance)
+	{
+		double result = 0;
+		int i=0;
+		
+		if(distance < 0 || valley_count != crest_count)
+			return 0;
+		
+		for(; i < valley_count; i++)
+			result += Math.pow(crest_value[i] - valley_value[i], 1.0/4);
+		
+		result = distance/result;
+		
+		return (float)result; 
+	}
+	
+	/***************************方向校准用到的接口***************************/
 	public void store_orisen_calibrate(int c,int t, float value)
 	{
 		ori_sensor_cali[c%2][t%30] = value;
@@ -57,7 +108,7 @@ public class Statistic{
 			}
 		}
 	}
-	
+	//找出区间的起点及连续长度
 	public void calcu_orientparam()
 	{
 		float increment = ori_meansensor_I_S[0]-ori_meansensor_I_S[1];
@@ -82,6 +133,7 @@ public class Statistic{
 		GeneralTool.saveToSDcard(111111, 111111, "AvaiParam.txt");
 	}
 	//最理想的是选取波动最稳定且误差最小的参数，后边要添加该功能
+	//在找出的所有区间中选出合适的方向区间
 	public int[] getoneparam()
 	{
 		int i;
@@ -109,21 +161,22 @@ public class Statistic{
 		return null;
 	}
 	
+	/***************************导航用到的方向接口***************************/
 	public void store_orisen(float value)
 	{
-		ori_sensor = GeneralTool.enlarge(ori_sensor,index_sensor);
+		ori_sensor = GeneralTool.enlarge_float(ori_sensor,index_sensor);
 		ori_sensor[index_sensor++] = value;
 	}
 	
 	public void store_oriacc(float value)
 	{
-		ori_acc = GeneralTool.enlarge(ori_acc,index_acc);
+		ori_acc = GeneralTool.enlarge_float(ori_acc,index_acc);
 		ori_acc[index_acc++] = value;
 	}
 	
 	public void store_oriincre(float value)
 	{
-		ori_incre = GeneralTool.enlarge(ori_incre,index_incre);
+		ori_incre = GeneralTool.enlarge_float(ori_incre,index_incre);
 		ori_incre[index_incre++] = value;
 	}
 	
@@ -212,7 +265,17 @@ public class Statistic{
 		else
 			return 0;
 	}
-	
+	public void cleanstepdata()
+	{
+		//每一步的波峰值和下标
+		crest_value = new float[30];
+		crest_index = new int [30];
+		crest_count = 0;
+		//每一步的波谷值和下标
+		valley_value = new float [30];
+		valley_index = new int [30];
+		valley_count = 0;
+	}
 	public void cleanalldata()
 	{
 		ori_sensor = new float[32];
@@ -229,5 +292,14 @@ public class Statistic{
 		ori_meanacc_I_S = new float [2][5][10];
 		ori_meansensor_I_S = new float[2];
 		count_calibrate = 0;
+		
+		//每一步的波峰值和下标
+		crest_value = new float[30];
+		crest_index = new int [30];
+		crest_count = 0;
+		//每一步的波谷值和下标
+		valley_value = new float [30];
+		valley_index = new int [30];
+		valley_count = 0;
 	}
 }

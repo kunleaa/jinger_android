@@ -50,7 +50,7 @@ public class StepDistCalculater{
 			if(MaxValue - PeFin.LPeak > 0.8)
 			{
 				//加入步频阈值 假设每秒不超过4步 采集的样点数 n = F/(4*2) = 50/8 =6
-				if(6 < (PeFin.LPeakIndex - MaxValueIndex + PeFin.bufflength3)%PeFin.bufflength3)
+				if(8 < (PeFin.LPeakIndex - MaxValueIndex + PeFin.bufflength3)%PeFin.bufflength3)
 				{
 					//这个时刻跨出一步
 					isStep = true;

@@ -125,7 +125,7 @@ public class GeneralTool{
 	}
 	
 	//扩容函数——float数组
-	static float[] enlarge(float [] array, int index)
+	static float[] enlarge_float(float [] array, int index)
 	{
 		float [] temp;
 		if(index*4/3 > array.length)
@@ -137,9 +137,22 @@ public class GeneralTool{
 		}
 		return array;
 	}
+	//扩容函数——int数组
+	static int[] enlarge_int(int [] array, int index)
+	{
+		int [] temp;
+		if(index*4/3 > array.length)
+		{
+			temp = array;
+			array = new int[2*array.length];
+			for(int i = 0; i < temp.length; i++)
+				array[i] = temp[i];
+		}
+		return array;
+	}
 	
 	//"config_ondraw.txt"
-	public static void read2vFromSDcard_4value(String filename, float value[]){
+	public static void read2vFromSDcard_value(String filename, float value[],int count){
 		int length;
 		String str;
 		String str_arr[];
@@ -151,17 +164,11 @@ public class GeneralTool{
 			read.read(buffer); 
 			str = EncodingUtils.getString(buffer, "UTF-8");   
 			str_arr = str.split("\r\n");
-		    if(str_arr[0] != null)
-		    	value[0] = Float.parseFloat(str_arr[0]);
-		    if(str_arr[1] != null)
-		    	value[1] = Float.parseFloat(str_arr[1]);
-		    if(str_arr[2] != null)
-		    	value[2] = Float.parseFloat(str_arr[2]);
-		    if(str_arr[3] != null)
-		    	value[3] = Float.parseFloat(str_arr[3]);
-		    
+			for(int i=0; i < count; i++)
+				if(str_arr[i] != null)
+			    	value[i] = Float.parseFloat(str_arr[i]);
+			
 		    System.out.println("read成功");  	
-		    
 		    read.close();
 		} catch (Exception e) {
 			e.printStackTrace();

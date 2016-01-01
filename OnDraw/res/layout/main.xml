@@ -53,6 +53,15 @@
 	    	android:textSize="14dp"
 	    	android:numeric="decimal"/>
 	        
+	        <EditText
+	        android:id="@+id/edit_distance"   
+	    	android:layout_width="fill_parent"  
+	    	android:layout_height="35dp"  
+	    	android:layout_weight="1"
+	    	android:text="30.0"
+	    	android:textSize="14dp"
+	    	android:numeric="decimal"/>
+	        
 	        <Button
 	            android:id="@+id/btn_get_value"
 	            android:layout_width="fill_parent"

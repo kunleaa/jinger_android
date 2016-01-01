@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +18,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.TextView.OnEditorActionListener;
 
 public class OnDrawActivity extends Activity {
     //地图显示参数
@@ -31,6 +35,7 @@ public class OnDrawActivity extends Activity {
 	EditText edit_start;
 	EditText edit_end;
 	EditText edit_stepparam;
+	EditText edit_distance;
 	
 	//传感器设备相关
 	private SensorManager manager;
@@ -55,8 +60,9 @@ public class OnDrawActivity extends Activity {
         
         layout = (LinearLayout)  findViewById(R.id.layout);//找到这个空间
         drawView = new DrawView(this);//创建自定义的控件
-        drawView.setMinimumHeight(300);
-        drawView.setMinimumWidth(500);
+        //drawView.setMinimumHeight(300);
+        //drawView.setMinimumWidth(500);
+        //设置layout的长高 成比例 240/706
         layout.addView(drawView);//将自定义的控件进行添加
         
         press = (Button)findViewById(R.id.btn_get_value);
@@ -65,19 +71,23 @@ public class OnDrawActivity extends Activity {
         edit_start = (EditText)findViewById(R.id.edit_start);
         edit_end = (EditText)findViewById(R.id.edit_end);
         edit_stepparam = (EditText)findViewById(R.id.edit_stepparam);
+        edit_distance = (EditText)findViewById(R.id.edit_distance);
 
         press.setOnClickListener(new OCL_Press());
         clean.setOnClickListener(new OCL_Clean());
+        edit_distance.setOnEditorActionListener(new OCL_Distance());
         
         //从sd卡读配置并显示到界面
-        config.Read_SDtoView(edit_start,edit_end,edit_mode,edit_stepparam);
+        config.Read_SDtoView(edit_start,edit_end,edit_mode,edit_stepparam,edit_distance);
         //传感器管理服务
         manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         
         //获得手机屏幕的长宽
         DisplayMetrics  dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
+        //定义地图的参数
         para_map = new Parameter_Map(dm.widthPixels,dm.heightPixels);
+        //绘制轨迹
         trajectory = new Trajectory(para_map);
         
 		//调用重新绘制
@@ -109,10 +119,11 @@ public class OnDrawActivity extends Activity {
 			if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
 				data_sensor.set_accle(event.values);
 				//数据显示到屏幕上
-				//原坐标下的数值表示受到力A的反作用力B，新坐标系表示A
+				//手机坐标下的数值（values）表示受到力A的反作用力B，新坐标系表示A
 				drawView.SetAcceleration_1(data_sensor.accelerometer[1], -data_sensor.accelerometer[0], -data_sensor.accelerometer[2]);
 				
-				function_app.selectfunction(config.MODE,data_sensor,trajectory,config,edit_start,edit_end);
+				//导航？校准（方向）
+				function_app.selectfunction(config.MODE,data_sensor,trajectory,config,edit_start,edit_end,edit_stepparam);
 				//计算路径
 				drawView.points1 = trajectory.getpath(para_map);
 				
@@ -149,7 +160,8 @@ public class OnDrawActivity extends Activity {
 			clbrt = cl;
 		}
 		
-		public void selectfunction(int fun, Data_Sensor ds, Trajectory tjctr,Config cf,EditText es, EditText ee)
+		//导航？校准
+		public void selectfunction(int fun, Data_Sensor ds, Trajectory tjctr,Config cf,EditText es, EditText ee, EditText estep)
 		{
 			if(fun == NAVIGATE) 
 			{
@@ -166,32 +178,25 @@ public class OnDrawActivity extends Activity {
 				}
 				else if(clbrt.state == false)
 				{
-					clbrt.end_calibrate(cf,es,ee);
+					clbrt.end_calibrate(cf,es,ee,estep);
 				}
 			}
 		}
 	}
 	
-	//导航类
-	public class Navigation
+	public class RotateAndFilt
 	{
 		RotationMatrix RotaMatrix = new RotationMatrix();
 		Filter FilterOfAccX = new Filter();
 		Filter FilterOfAccY = new Filter();
 		Filter FilterOfAccZ = new Filter();
-		PeakFinder PeFin = new PeakFinder();
-		PeakFinder PeFin_X = new PeakFinder();
-		PeakFinder PeFin_Y = new PeakFinder();
-		StepDistCalculater SDCal = new StepDistCalculater();
-		Statistic statistic = new Statistic();
-		float angleTrans = 0;
 		
-		void run_navigate(Data_Sensor ds)
+		protected float [] rotate_filt(Data_Sensor ds)
 		{
 			float[] data_ori = ds.use_ori();
 			float[] data_acc = ds.use_acc();
-			float[] data_ori_tans = ds.use_ori_trans();
 			
+			//计算旋转矩阵
 			RotaMatrix.CalRotaMatrix(data_ori[0], data_ori[1], data_ori[2]);
 			
 			//由旋转矩阵计算的绝对坐标系下加速度的坐标值 
@@ -199,8 +204,10 @@ public class OnDrawActivity extends Activity {
 			float [] AbsCoodinate_filt = new float[3];
 			if(AbsCoodinate != null)
 			{
+				//X、Y轴做5值均值滤波
 				AbsCoodinate_filt[0] = FilterOfAccX.AverageFiltering_manual((float)AbsCoodinate[0][0],5);
 				AbsCoodinate_filt[1] = FilterOfAccY.AverageFiltering_manual((float)AbsCoodinate[1][0],5);
+				//Z轴先做36值均值滤波，再做3值均值滤波
 				AbsCoodinate_filt[2] = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
 				drawView.SetAbsCoodinate_1(AbsCoodinate_filt[0], AbsCoodinate_filt[1], AbsCoodinate_filt[2]);
 				/*GeneralTool.saveToSDcard((float)AbsCoodinate_filt[0],
@@ -208,6 +215,32 @@ public class OnDrawActivity extends Activity {
 										 (float)AbsCoodinate_filt[2],
 										 "data_acc.txt");*/
 			}
+			return AbsCoodinate_filt;
+		}
+		void cleanall()
+		{
+        	//Filter清空
+        	FilterOfAccX.cleanall();
+        	FilterOfAccY.cleanall();
+        	FilterOfAccZ.cleanall();
+		}
+	}
+	//导航类
+	public class Navigation extends RotateAndFilt
+	{
+		PeakFinder PeFin = new PeakFinder();
+		PeakFinder PeFin_X = new PeakFinder();
+		PeakFinder PeFin_Y = new PeakFinder();
+		StepDistCalculater SDCal = new StepDistCalculater();
+		Statistic statistic = new Statistic();
+		float angleTrans = 0;
+		//计算导航坐标
+		void run_navigate(Data_Sensor ds)
+		{
+			float[] data_ori_tans = ds.use_ori_trans();
+			float [] AbsCoodinate_filt;
+			//由旋转矩阵计算的绝对坐标系下加速度的坐标值 
+			AbsCoodinate_filt = rotate_filt(ds);
 			//取极大值和极小值，加负号去掉方向的影响
 			PeFin.FindPeak(-AbsCoodinate_filt[2]);
 			//存储X Y轴的值
@@ -215,10 +248,11 @@ public class OnDrawActivity extends Activity {
 			PeFin_Y.StoreValue(AbsCoodinate_filt[1]);
 			//计算步长和步数，记步也是正确的
 			SDCal.CalcuStepDist(PeFin,config.STEP_PARAM);
-			angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3, config.SFM1_4, config.EFM1_4);
-			//GeneralTool.saveToSDcard(angleTrans);
-			if(angleTrans > -1)
+			if(SDCal.isStep == true)
 			{
+				//用大地坐标系下的加速度来确定方向
+				angleTrans = Orientation_With_acceleration.OrientWithTime(PeFin, SDCal, PeFin_X.fArray3, PeFin_Y.fArray3, config.SFM1_4, config.EFM1_4);
+				//GeneralTool.saveToSDcard(angleTrans);
 				drawView.ori_acc = angleTrans; 
 				//存储传感器方向和计算的方向和两个方向增量
 				drawView.ori_increment = statistic.cal_sto_oriincre(angleTrans, data_ori_tans[0]);
@@ -243,27 +277,20 @@ public class OnDrawActivity extends Activity {
 		
 		void cleanall()
 		{
+			super.cleanall();
             //统计数据清空
             statistic.cleanalldata();
             //PeakFinder清空
         	PeFin.cleanall();
         	PeFin_X.cleanall();
         	PeFin_Y.cleanall();
-        	//Filter清空
-        	FilterOfAccX.cleanall();
-        	FilterOfAccY.cleanall();
-        	FilterOfAccZ.cleanall();
         	//StepDistCalculater清空
         	SDCal.cleanall();
 		}
 	}
 	
-	public class Calibration
+	public class Calibration extends RotateAndFilt
 	{
-		RotationMatrix RotaMatrix = new RotationMatrix();
-		Filter FilterOfAccX = new Filter();
-		Filter FilterOfAccY = new Filter();
-		Filter FilterOfAccZ = new Filter();
 		PeakFinder PeFin = new PeakFinder();
 		PeakFinder PeFin_X = new PeakFinder();
 		PeakFinder PeFin_Y = new PeakFinder();
@@ -278,26 +305,10 @@ public class OnDrawActivity extends Activity {
 		
 		public void run_calibrate(Data_Sensor ds)
 		{
-			float[] data_ori = ds.use_ori();
-			float[] data_acc = ds.use_acc();
 			float[] data_ori_tans = ds.use_ori_trans();
-			
-			RotaMatrix.CalRotaMatrix(data_ori[0], data_ori[1], data_ori[2]);
-			
+			float [] AbsCoodinate_filt;
 			//由旋转矩阵计算的绝对坐标系下加速度的坐标值 
-			double[][] AbsCoodinate =  RotaMatrix.CalcuAbsCoodinate(data_acc[1], data_acc[0], data_acc[2]);
-			float [] AbsCoodinate_filt = new float[3];
-			if(AbsCoodinate != null)
-			{
-				AbsCoodinate_filt[0] = FilterOfAccX.AverageFiltering_manual((float)AbsCoodinate[0][0],5);
-				AbsCoodinate_filt[1] = FilterOfAccY.AverageFiltering_manual((float)AbsCoodinate[1][0],5);
-				AbsCoodinate_filt[2] = FilterOfAccZ.AverageFiltering((float)AbsCoodinate[2][0]);
-				drawView.SetAbsCoodinate_1(AbsCoodinate_filt[0], AbsCoodinate_filt[1], AbsCoodinate_filt[2]);
-				/*GeneralTool.saveToSDcard((float)AbsCoodinate_filt[0],
-										 (float)AbsCoodinate_filt[1],
-										 (float)AbsCoodinate_filt[2],
-										 "data_acc.txt");*/
-			}
+			AbsCoodinate_filt = rotate_filt(ds);
 			//取极大值和极小值，加负号去掉方向的影响
 			PeFin.FindPeak(-AbsCoodinate_filt[2]);
 			//存储X Y轴的值
@@ -308,6 +319,9 @@ public class OnDrawActivity extends Activity {
 			
 			if(SDCal.isStep == true)
 			{
+				//存储波峰波谷值及下标
+				statistic.store_crest(SDCal.PreMaxValue, SDCal.PreMaxValueIndex);
+				statistic.store_valley(SDCal.PreMinValue, SDCal.PreMinValueIndex);
 				//存储传感器方向
 				statistic.store_orisen_calibrate(count_cali,count_step,data_ori_tans[0]);
 				int start,end;
@@ -322,9 +336,6 @@ public class OnDrawActivity extends Activity {
 					}
 				}
 				count_step++;
-				
-				//GeneralTool.saveToSDcard(angleTrans);
-				drawView.ori_acc = angleTrans; 
 				statistic.store_oriacc(angleTrans);
 				/*GeneralTool.saveToSDcard(angleTrans,drawView.orientationA,"data_angel.txt");
 				GeneralTool.saveToSDcard(PeFin.Circle*PeFin.bufflength3 + SDCal.PreMinValueIndex,
@@ -333,15 +344,24 @@ public class OnDrawActivity extends Activity {
 			}
 		}
 		
-		void end_calibrate(Config cf,EditText es, EditText ee)
+		//去顶区间
+		void end_calibrate(Config cf,EditText es, EditText ee, EditText estep)
 		{
 			int temp[];
 			if(count_step <= 0)
 				return;
+			//距离大于0时，计算步长参数
+			if(cf.DISTANCE > 0)
+			{
+				cf.STEP_PARAM = statistic.calcu_stepdisparam_byWeinberg(cf.DISTANCE);
+				estep.setText(""+cf.STEP_PARAM);
+			}
 			
 			statistic.mean_orisen_calibrate(count_cali, count_step);
 			statistic.mean_oriacc_calibrate(count_cali, count_step);
+			//计算出符合要求的区间并保存
 			statistic.calcu_orientparam();
+			//返回确定的区间（起始位置，区间长度）
 			temp = statistic.getoneparam();
 			if(temp == null)
 				temp = new int[] {0,-100};
@@ -358,6 +378,8 @@ public class OnDrawActivity extends Activity {
 	            statistic.cleanalldata();
 	            count_cali=0;
 			}
+			else
+				statistic.cleanstepdata();
 		}
 		
 		void give_trajectinfo(Trajectory tjctr)
@@ -370,16 +392,13 @@ public class OnDrawActivity extends Activity {
 		
 		void cleanall()
 		{
+			super.cleanall();
             //统计数据清空
             statistic.cleanalldata();
             //PeakFinder清空
         	PeFin.cleanall();
         	PeFin_X.cleanall();
         	PeFin_Y.cleanall();
-        	//Filter清空
-        	FilterOfAccX.cleanall();
-        	FilterOfAccY.cleanall();
-        	FilterOfAccZ.cleanall();
         	//StepDistCalculater清空
         	SDCal.cleanall();
 
@@ -433,15 +452,16 @@ public class OnDrawActivity extends Activity {
 		
 		Trajectory(Parameter_Map pm)
 		{
+			//起始位置坐标
     		StepTranslate[0] = pm.screenWidth/2;
             StepTranslate[1] = 100*pm.every/2;
 		}
 		
 		public void Trans(float DistOneStep,float unit){
 				//人员行走在手机宽度方向的变化
-				StepTranslate[0] = StepTranslate[0] -	(float) ((DistOneStep*AngleCos)/0.33)*unit;
+				StepTranslate[0] = StepTranslate[0] -	(float) ((DistOneStep*AngleCos)/1.5)*unit;
 				//人员行走在手机高度方向的变化
-				StepTranslate[1] = StepTranslate[1] + (float) ((DistOneStep*AngleSin)/0.33)*unit;
+				StepTranslate[1] = StepTranslate[1] + (float) ((DistOneStep*AngleSin)/1.5)*unit;
 				//行走的距离
 				distance =distance+DistOneStep;
 		}
@@ -450,7 +470,7 @@ public class OnDrawActivity extends Activity {
 				//数组扩容2倍
 				if(pointsLine.length < bufflength)
 				{
-					pointsLine = GeneralTool.enlarge(pointsLine, iLastIndex);
+					pointsLine = GeneralTool.enlarge_float(pointsLine, iLastIndex);
 				}
 				if(iLastIndex <4)
 				{
@@ -488,7 +508,7 @@ public class OnDrawActivity extends Activity {
     
 	class Config
 	{
-		//startFromMiddle1p4
+		//startFromMiddle 1/4
 		int SFM1_4;
 		int EFM1_4;
 		//当前运行模式
@@ -496,16 +516,19 @@ public class OnDrawActivity extends Activity {
 		//步长参数
 		//STEP_PARAM 0.1737,0.2314,0.1489;
 		float STEP_PARAM;
+		float DISTANCE;
 		
 		String file_config = "config_ondraw.txt";
 		
-		public void Read_ViewtoSD(EditText es,EditText ee,EditText md, EditText sp)
+		//把es--SFM1_4，ee--EFM1_4，md--MODE，sp--STEP_PARAM保存到SD卡中
+		public void Read_ViewtoSD(EditText es,EditText ee,EditText md, EditText sp, EditText ed)
 		{
         	//从界面获取参数
         	MODE =  md.getText().toString().equalsIgnoreCase("c") == true ? Function_app.CALIBRATE:Function_app.NAVIGATE;
         	SFM1_4 = Integer.parseInt(es.getText().toString());  
         	EFM1_4 = Integer.parseInt(ee.getText().toString());
         	STEP_PARAM = Float.parseFloat(sp.getText().toString());
+        	DISTANCE = Float.parseFloat(ed.getText().toString());
         	//提示信息
         	md.setText("");
         	md.setHint(Function_app.name_mode[MODE]);
@@ -516,20 +539,24 @@ public class OnDrawActivity extends Activity {
         	GeneralTool.saveToSDcard(EFM1_4,file_config);
         	GeneralTool.saveToSDcard(MODE,file_config);
         	GeneralTool.saveToSDcard(STEP_PARAM,file_config);
+        	GeneralTool.saveToSDcard(DISTANCE,file_config);
 		}
 		
-		public void Read_SDtoView(EditText es,EditText ee, EditText md, EditText sp)
+		public void Read_SDtoView(EditText es,EditText ee, EditText md, EditText sp, EditText ed)
 		{
-	        float rfdata[] = {0,0,0,(float) 0.1737};
-	        GeneralTool.read2vFromSDcard_4value(file_config, rfdata);
+			
+	        float rfdata[] = {0,0,0,(float) 0.6,30};
+	        GeneralTool.read2vFromSDcard_value(file_config, rfdata, 5);
 	        SFM1_4 = (int)rfdata[0];
 	        EFM1_4 = (int)rfdata[1];
 	        MODE = (int)rfdata[2];
 	        STEP_PARAM = rfdata[3];
+	        DISTANCE = rfdata[4];
 	        
 	        es.setText(""+SFM1_4);
 	        ee.setText(""+EFM1_4);
 	        sp.setText(""+STEP_PARAM);
+	        ed.setText(""+DISTANCE);
         	//提示信息
         	md.setText("");
 	        md.setHint(Function_app.name_mode[MODE]);
@@ -543,14 +570,14 @@ public class OnDrawActivity extends Activity {
 			if(config.MODE == function_app.NAVIGATE)
 			{
 	        	//配置从视图存储到sd卡
-	        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam);
+	        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam,edit_distance);
 			}
 			else
 			{
 				if(function_app.NAVIGATE == (edit_mode.getText().toString().equalsIgnoreCase("n") == true ? Function_app.NAVIGATE:Function_app.CALIBRATE))
 				{
 					//配置从视图存储到sd卡
-		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam);
+		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam,edit_distance);
 		        	((Button)v).setText("PRESS");
 				}
 				else
@@ -581,14 +608,27 @@ public class OnDrawActivity extends Activity {
         	trajectory = new Trajectory(para_map);
         } 
 	}
-
+	
+	class OCL_Distance implements OnEditorActionListener
+	{
+		@Override
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			//隐藏键盘
+			final InputMethodManager imm = (InputMethodManager)getSystemService(
+            	      Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            config.DISTANCE = Float.parseFloat(edit_distance.getText().toString());;
+			return false;
+		}  
+	}
 	
 	public class Data_Sensor
 	{
+		//手机坐标下
 		private float [] accelerometer = {0,0,0};
 		
 		private float [] orientation = {0,0,0};
-		// 转化后的方向角度
+		// 大地坐标的方向角度
 		private float [] orientation_trans = {0,0,0};
 		//记录从上一次被使用后，新到的数据个数
 		int count_orient = 0;
@@ -608,7 +648,7 @@ public class OnDrawActivity extends Activity {
 			 count_orient++;
 			 count_orient_trans++;
 		}
-		
+		//将手机坐标方向传感器的数值转换到大地坐标下
 		public void TranslateOrient()
 		{
 			 //初始手机保持水平姿态
@@ -658,17 +698,5 @@ public class OnDrawActivity extends Activity {
 		
 		getMenuInflater().inflate(R.menu.main,menu);
 		return true;
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
-		switch (item.getItemId()) {
-		case R.id.set:
-			break;
-		default:
-			break;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 }
