@@ -1,17 +1,16 @@
 package com.OnDraw;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.util.DisplayMetrics;
 import android.view.View;
 
 public class DrawView extends View {
+	//参数信息显示开关
+	boolean switch_info = false;
     //地图显示参数
-	Parameter_Map para_map ;
+	public Parameter_Map para_map ;
 	//路径信息相关
 	public Trajectory trajectory;
 	
@@ -20,7 +19,6 @@ public class DrawView extends View {
 	float paintX =0;
 	float paintY =0;
 	float radius =10;
-	float[] points = new float[32];
 	
 	float accelerationA =0;
 	float accelerationB =0;
@@ -55,11 +53,8 @@ public class DrawView extends View {
 	
 	public DrawView(Context context) {
 	super(context);
-    //获得手机屏幕的长宽
-    DisplayMetrics  dm = new DisplayMetrics();
-    ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
     //定义地图的参数
-    para_map = new Parameter_Map(dm.widthPixels,dm.heightPixels);
+    para_map = new Parameter_Map();
     //绘制轨迹
     trajectory = new Trajectory(para_map);
 	// TODO Auto-generated constructor stub
@@ -81,23 +76,24 @@ public class DrawView extends View {
 		paint.setColor(Color.BLUE);
 		paint.setStrokeWidth(4);
 		paint.setStyle(Paint.Style.STROKE);
-		//canvas.drawLines(points, paint);
 		
 		paint.setColor(Color.RED);//设置笔的颜色
 		paint.setTextSize(50);
 		
 		canvas.drawLines(points1, paint);
 
-		canvas.drawText(String.valueOf(ori_acc), 10, 50, paint);
-		canvas.drawText(String.valueOf(orientationA), 300, 50, paint);
-		canvas.drawText(String.valueOf(ori_increment), 600, 50, paint);
-		
-		canvas.drawText(String.valueOf(mean_oriacc), 10, 100, paint);
-		canvas.drawText(String.valueOf(mean_orisensor), 300, 100, paint);
-		
-		canvas.drawText(String.valueOf(Step), 10, 150, paint);
-		canvas.drawText(String.valueOf(distance), 300, 150, paint);
-		
+		if(switch_info == true)
+		{
+			canvas.drawText(String.valueOf(ori_acc), 10, 50, paint);
+			canvas.drawText(String.valueOf(orientationA), 300, 50, paint);
+			canvas.drawText(String.valueOf(ori_increment), 600, 50, paint);
+			
+			canvas.drawText(String.valueOf(mean_oriacc), 10, 100, paint);
+			canvas.drawText(String.valueOf(mean_orisensor), 300, 100, paint);
+			
+			canvas.drawText(String.valueOf(Step), 10, 150, paint);
+			canvas.drawText(String.valueOf(distance), 300, 150, paint);
+		}
 	}
 	
 	public void SetAcceleration_1(float A, float B, float C)
@@ -160,7 +156,6 @@ public class DrawView extends View {
 		paintX =0;
 		paintY =0;
 		radius =10;
-		points = new float[32];
 		
 		accelerationA =0;
 		accelerationB =0;
@@ -205,8 +200,7 @@ public class DrawView extends View {
 		float stepcount;
 		
 		//单步信息
-		float position_start_x = 0;
-		float position_start_y = 0;
+		Parameter_Map parmap;
 		float[] StepTranslate = new float[]{0,0};
 		float AngleSin = 0;
 		float AngleCos = 0;
@@ -217,14 +211,14 @@ public class DrawView extends View {
 		//总长度
 		float sumdistance = 0;
 		
-		float[] getpath(Parameter_Map pm)
+		float[] getpath()
 		{
 			if(true == isstep)
 			{
 				//计算cos和sin值
 				calcu_sincos(angle);
 				//计算这一步之后的人在地图中位置
-				Trans(distonestep,pm.every);
+				Trans(distonestep);
 				//构造路径
 				GetPointsLine();
 			}
@@ -239,18 +233,14 @@ public class DrawView extends View {
 		
 		Trajectory(Parameter_Map pm)
 		{
-			position_start_x = pm.screenWidth/2;
-			position_start_y = 100*pm.every/2;
-			//起始位置坐标
-    		StepTranslate[0] = position_start_x;
-            StepTranslate[1] = position_start_y;
+			parmap = pm;
 		}
 		
-		public void Trans(float DistOneStep,float unit){
-				//人员行走在手机宽度方向的变化
-				StepTranslate[0] = StepTranslate[0] -	(float) ((DistOneStep*AngleCos)/1.5)*unit;
+		public void Trans(float DistOneStep){
+				//人员行走在手机宽度方向的变化 乘以100将单位m转化为mm
+				StepTranslate[0] = StepTranslate[0] - parmap.convert_buildtoscreen(DistOneStep*AngleCos*100);
 				//人员行走在手机高度方向的变化
-				StepTranslate[1] = StepTranslate[1] + (float) ((DistOneStep*AngleSin)/1.5)*unit;
+				StepTranslate[1] = StepTranslate[1] + parmap.convert_buildtoscreen(DistOneStep*AngleSin*100);
 				//行走的距离
 				sumdistance += DistOneStep;
 		}
@@ -278,20 +268,26 @@ public class DrawView extends View {
 					pointsLine[iLastIndex+3] = StepTranslate[1];
 				}
 				iLastIndex = (iLastIndex+4)%bufflength;
-			//generalTool.saveToSDcard(drawView.points1);
 		}
 		
 		public void setpaintdata()
 		{
 			//计算路径
-			points1 = trajectory.getpath(para_map);
-			
+			points1 = trajectory.getpath();
 			Step = stepcount;
 			distance = sumdistance;
 	        paintX=StepTranslate[0];
 			paintY=StepTranslate[1];
-			radius = para_map.every;
+			radius = 10;
 		}
+		
+		void init_position()
+		{
+			//起始位置坐标
+    		StepTranslate[0] = para_map.convert_buildtoscreen(750);
+            StepTranslate[1] = para_map.convert_buildtoscreen(2200);
+		}
+		
 		public void cleanalldata()
 		{
 			//绘图需要的一些信息
@@ -301,8 +297,7 @@ public class DrawView extends View {
 			stepcount = 0;
 			
 			//单步信息
-    		StepTranslate[0] = position_start_x;
-            StepTranslate[1] = position_start_y;
+			init_position();
 			AngleSin = 0;
 			AngleCos = 0;
 			//路径信息
@@ -316,16 +311,26 @@ public class DrawView extends View {
 	
     public class Parameter_Map
     {
-    	int screenWidth = 0;   
-        int screenHeight = 0;
-        float every = 0;
-        Parameter_Map(int widthPixels,int heightPixels)
+    	//实验楼的长和宽是分别是 4400mm 和 1500m
+    	float WIDTH_BUILD = 1495;
+    	float HEIGHT_BUILD = 4400;
+    	float screenWidth = 0;
+        float screenHeight = 0;
+        //比例  画布的高（像素）/实际长度（毫米）
+        float ratio = 0;
+        
+        void set_paramter_map(int heightPixels)
         {
-            screenWidth = widthPixels;   
-            screenHeight = heightPixels;
-            every = screenHeight/108;
+        	screenHeight = heightPixels;
+            screenWidth = (int) (screenHeight*0.3399);   
+            ratio = screenHeight/HEIGHT_BUILD;
+            //初始化位置
+            trajectory.init_position();
+        }
+        float convert_buildtoscreen(float length)
+        {
+        	return length*ratio;
         }
     }
-	
 }
 

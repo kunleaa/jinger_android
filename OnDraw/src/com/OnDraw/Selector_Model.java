@@ -10,8 +10,6 @@ public class Selector_Model
 	Navigation nvgt = new Navigation();
 	Calibration clbrt = new Calibration();
 	
-	Selector_Model(){}
-	
 	//µ¼º½£¿Ð£×¼
 	public void selectfunction(Config cf, Data_Sensor ds, Controller_View cv, DrawView dv)
 	{

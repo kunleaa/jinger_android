@@ -1,7 +1,5 @@
 package com.OnDraw;
 
-import com.OnDraw.Config;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.KeyEvent;
@@ -53,15 +51,15 @@ public class Controller_View
 	class OCL_Press implements OnClickListener
 	{
 		@Override
-        public void onClick(View v) {  
-			if(config.MODE == function_app.NAVIGATE)
+        public void onClick(View v) {
+			if(config.MODE == Selector_Model.NAVIGATE)
 			{
 	        	//≈‰÷√¥” ”Õº¥Ê¥¢µΩsdø®
 	        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam,edit_distance);
 			}
 			else
 			{
-				if(function_app.NAVIGATE == (edit_mode.getText().toString().equalsIgnoreCase("n") == true ? Selector_Model.NAVIGATE:Selector_Model.CALIBRATE))
+				if(Selector_Model.NAVIGATE == (edit_mode.getText().toString().equalsIgnoreCase("n") == true ? Selector_Model.NAVIGATE:Selector_Model.CALIBRATE))
 				{
 					//≈‰÷√¥” ”Õº¥Ê¥¢µΩsdø®
 		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam,edit_distance);

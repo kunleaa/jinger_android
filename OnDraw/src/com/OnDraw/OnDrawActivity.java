@@ -7,10 +7,25 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.DisplayMetrics;
 import android.view.Window;
 import android.widget.LinearLayout;
 
 public class OnDrawActivity extends Activity {
+	
+	private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == 0) {
+                DisplayMetrics  dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+    			drawView.para_map.set_paramter_map(dm.heightPixels);
+            }
+            super.handleMessage(msg);
+        }
+    };
 	
 	//传感器设备相关
 	private SensorManager manager;
@@ -43,6 +58,11 @@ public class OnDrawActivity extends Activity {
         manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		//调用重新绘制
 		drawView.IsInvalidate();
+		
+        //设置地图长宽适当的值
+        Message msg = new Message();
+        msg.what = 0;
+        handler.sendMessageDelayed(msg,5);
     }
     
     protected void onResume() {
