@@ -1,13 +1,20 @@
 package com.OnDraw;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.util.DisplayMetrics;
 import android.view.View;
 
 public class DrawView extends View {
+    //地图显示参数
+	Parameter_Map para_map ;
+	//路径信息相关
+	public Trajectory trajectory;
+	
 	final int FREQUENT = 50; //目前传感器更新频率为一秒50次
 	int refreshcount = 0;
 	float paintX =0;
@@ -48,7 +55,13 @@ public class DrawView extends View {
 	
 	public DrawView(Context context) {
 	super(context);
-	
+    //获得手机屏幕的长宽
+    DisplayMetrics  dm = new DisplayMetrics();
+    ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
+    //定义地图的参数
+    para_map = new Parameter_Map(dm.widthPixels,dm.heightPixels);
+    //绘制轨迹
+    trajectory = new Trajectory(para_map);
 	// TODO Auto-generated constructor stub
 	}
 
@@ -161,6 +174,7 @@ public class DrawView extends View {
 		orientationBB = 0;
 		orientationCC = 0;
 		Step = 0;
+		distance = 0;
 		
 		AbsCoodinateA = 0;
 		AbsCoodinateB = 0;
@@ -179,5 +193,139 @@ public class DrawView extends View {
 		mean_orisensor = 0;
 		mean_oriacc = 0;
 	}
+	
+	//轨迹存储，为绘图准备
+	public class Trajectory{
+		final double PI = 3.1415926;
+		
+		//绘图需要的一些信息
+		boolean isstep;
+		float distonestep;
+		float angle;
+		float stepcount;
+		
+		//单步信息
+		float position_start_x = 0;
+		float position_start_y = 0;
+		float[] StepTranslate = new float[]{0,0};
+		float AngleSin = 0;
+		float AngleCos = 0;
+		//路径信息
+		int iLastIndex = 0;
+		int bufflength = 1024; 
+		float[] pointsLine = new float[32];
+		//总长度
+		float sumdistance = 0;
+		
+		float[] getpath(Parameter_Map pm)
+		{
+			if(true == isstep)
+			{
+				//计算cos和sin值
+				calcu_sincos(angle);
+				//计算这一步之后的人在地图中位置
+				Trans(distonestep,pm.every);
+				//构造路径
+				GetPointsLine();
+			}
+			return pointsLine;
+		}
+		
+		void calcu_sincos(float angle)
+		{
+				AngleSin = (float) Math.sin((angle*PI)/180);
+				AngleCos = (float) Math.cos((angle*PI)/180);
+		}
+		
+		Trajectory(Parameter_Map pm)
+		{
+			position_start_x = pm.screenWidth/2;
+			position_start_y = 100*pm.every/2;
+			//起始位置坐标
+    		StepTranslate[0] = position_start_x;
+            StepTranslate[1] = position_start_y;
+		}
+		
+		public void Trans(float DistOneStep,float unit){
+				//人员行走在手机宽度方向的变化
+				StepTranslate[0] = StepTranslate[0] -	(float) ((DistOneStep*AngleCos)/1.5)*unit;
+				//人员行走在手机高度方向的变化
+				StepTranslate[1] = StepTranslate[1] + (float) ((DistOneStep*AngleSin)/1.5)*unit;
+				//行走的距离
+				sumdistance += DistOneStep;
+		}
+		
+		public void GetPointsLine(){
+				//数组扩容2倍
+				if(pointsLine.length < bufflength)
+				{
+					pointsLine = GeneralTool.enlarge_float(pointsLine, iLastIndex);
+				}
+				if(iLastIndex <4)
+				{
+					pointsLine[0] = StepTranslate[0];
+					pointsLine[1] = StepTranslate[1];
+					pointsLine[2] = StepTranslate[0];
+					pointsLine[3] = StepTranslate[1];
+				}
+				else
+				{
+					pointsLine[iLastIndex-2] = StepTranslate[0];
+					pointsLine[iLastIndex-1] = StepTranslate[1];
+					pointsLine[iLastIndex] = StepTranslate[0];
+					pointsLine[iLastIndex+1] = StepTranslate[1];
+					pointsLine[iLastIndex+2] = StepTranslate[0];
+					pointsLine[iLastIndex+3] = StepTranslate[1];
+				}
+				iLastIndex = (iLastIndex+4)%bufflength;
+			//generalTool.saveToSDcard(drawView.points1);
+		}
+		
+		public void setpaintdata()
+		{
+			//计算路径
+			points1 = trajectory.getpath(para_map);
+			
+			Step = stepcount;
+			distance = sumdistance;
+	        paintX=StepTranslate[0];
+			paintY=StepTranslate[1];
+			radius = para_map.every;
+		}
+		public void cleanalldata()
+		{
+			//绘图需要的一些信息
+			isstep = false;
+			distonestep = 0;
+			angle = 0;
+			stepcount = 0;
+			
+			//单步信息
+    		StepTranslate[0] = position_start_x;
+            StepTranslate[1] = position_start_y;
+			AngleSin = 0;
+			AngleCos = 0;
+			//路径信息
+			iLastIndex = 0;
+			bufflength = 1024; 
+			pointsLine = new float[32];
+			//总长度
+			sumdistance = 0;
+		}
+	}
+	
+    public class Parameter_Map
+    {
+    	int screenWidth = 0;   
+        int screenHeight = 0;
+        float every = 0;
+        Parameter_Map(int widthPixels,int heightPixels)
+        {
+            screenWidth = widthPixels;   
+            screenHeight = heightPixels;
+            every = screenHeight/108;
+        }
+    }
+	
 }
 
