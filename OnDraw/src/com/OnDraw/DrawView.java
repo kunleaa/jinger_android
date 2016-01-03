@@ -229,6 +229,9 @@ public class DrawView extends View {
 		{
 				AngleSin = (float) Math.sin((angle*PI)/180);
 				AngleCos = (float) Math.cos((angle*PI)/180);
+				//改变绘图的方向适应地图
+				AngleSin = -AngleSin;
+				AngleCos = -AngleCos;
 		}
 		
 		Trajectory(Parameter_Map pm)
