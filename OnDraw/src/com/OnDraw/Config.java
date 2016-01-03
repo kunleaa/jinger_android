@@ -20,7 +20,7 @@ public class Config
 	public void Read_ViewtoSD(EditText es,EditText ee,EditText md, EditText sp, EditText ed)
 	{
     	//从界面获取参数
-    	MODE =  md.getText().toString().equalsIgnoreCase("c") == true ? Selector_Model.CALIBRATE:Selector_Model.NAVIGATE;
+    	MODE = parse_mode(md);
     	SFM1_4 = Integer.parseInt(es.getText().toString());  
     	EFM1_4 = Integer.parseInt(ee.getText().toString());
     	STEP_PARAM = Float.parseFloat(sp.getText().toString());
@@ -51,11 +51,25 @@ public class Config
         
         cv.edit_start.setText(""+SFM1_4);
         cv.edit_end.setText(""+EFM1_4);
-        cv.edit_stepparam.setText(""+STEP_PARAM);
+        cv.edit_stepparam.setText(""+GeneralTool.cut_decimal(STEP_PARAM,2));
+        //截取小数点后2两位，显示
         cv.edit_distance.setText(""+DISTANCE);
 
     	//提示信息
         cv.edit_mode.setText("");
         cv.edit_mode.setHint(Selector_Model.name_mode[MODE]);
+	}
+	//从控件中解析要配置的模式
+	int parse_mode(EditText md)
+	{
+		int mode = Selector_Model.SIMPLE_NAVIGATE;
+    	String str_mode = md.getText().toString();
+		if(str_mode.equalsIgnoreCase("c") == true)
+			mode = Selector_Model.CALIBRATE;
+    	else if(str_mode.equalsIgnoreCase("n") == true)
+    		mode = Selector_Model.NAVIGATE;
+    	else if(str_mode.equalsIgnoreCase("s") == true)
+    		mode = Selector_Model.SIMPLE_NAVIGATE;
+		return mode;
 	}
 }

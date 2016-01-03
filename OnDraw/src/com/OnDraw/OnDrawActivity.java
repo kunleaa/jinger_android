@@ -62,7 +62,7 @@ public class OnDrawActivity extends Activity {
         //设置地图长宽适当的值
         Message msg = new Message();
         msg.what = 0;
-        handler.sendMessageDelayed(msg,5);
+        handler.sendMessageDelayed(msg,1);
     }
     
     protected void onResume() {

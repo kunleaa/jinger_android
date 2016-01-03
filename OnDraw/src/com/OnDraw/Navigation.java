@@ -61,5 +61,6 @@ public class Navigation extends RotateAndFilt
 	  	PeFin_Y.cleanall();
 	  	//StepDistCalculaterÇå¿Õ
 	  	SDCal.cleanall();
+	  	angleTrans = 0;
 	}
 }

@@ -24,7 +24,7 @@
 	    	android:layout_height="35dp"  
 	    	android:layout_weight="1"
 	    	android:textSize="14dp"
-	    	android:digits = "ncNC"/>
+	    	android:digits = "ncsNCS"/>
        	    
 	        <EditText
 	        android:id="@+id/edit_start"   

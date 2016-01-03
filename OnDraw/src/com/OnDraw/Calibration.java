@@ -112,6 +112,7 @@ public class Calibration extends RotateAndFilt
     	PeFin_Y.cleanall();
     	//StepDistCalculaterÇå¿Õ
     	SDCal.cleanall();
+    	angleTrans = 0;
 
 		count_step = 0;
 		count_cali = 0;

@@ -288,7 +288,7 @@ public class DrawView extends View {
 		{
 			//起始位置坐标
     		StepTranslate[0] = para_map.convert_buildtoscreen(750);
-            StepTranslate[1] = para_map.convert_buildtoscreen(2200);
+            StepTranslate[1] = para_map.convert_buildtoscreen(50);
 		}
 		
 		public void cleanalldata()

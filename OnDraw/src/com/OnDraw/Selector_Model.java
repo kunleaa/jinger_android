@@ -5,10 +5,12 @@ public class Selector_Model
 {
 	static final int NAVIGATE = 0;
 	static final int CALIBRATE = 1;
-	static final String [] name_mode = {"NAVIG","CALIB"};
+	static final int SIMPLE_NAVIGATE = 2;
+	static final String [] name_mode = {"NAVIG","CALIB","SIM_NAVI"};
 	
 	Navigation nvgt = new Navigation();
 	Calibration clbrt = new Calibration();
+	Simple_Navigation spnvgt = new Simple_Navigation();
 	
 	//µ¼º½£¿Ð£×¼
 	public void selectfunction(Config cf, Data_Sensor ds, Controller_View cv, DrawView dv)
@@ -30,6 +32,11 @@ public class Selector_Model
 			{
 				clbrt.end_calibrate(cf,cv);
 			}
+		}
+		else if(cf.MODE == SIMPLE_NAVIGATE) 
+		{
+			spnvgt.run_simple_navigate(ds, dv, cf);
+			spnvgt.give_trajectinfo(dv);
 		}
 	}
 }

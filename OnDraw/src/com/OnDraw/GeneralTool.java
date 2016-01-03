@@ -183,4 +183,16 @@ public class GeneralTool{
         }
         return false;
 	}
+	//截取小数的小数点后n位
+	public static float cut_decimal(float data, int n)
+	{ 
+		if(n < 0)
+			return -1;
+		for(int i = 0; i < n; i++)
+			data = data * 10;
+		data = (int)(data);
+		for(int i = 0; i < n; i++)
+			data = data / 10;
+		return data;
+	}
 }
