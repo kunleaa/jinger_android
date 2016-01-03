@@ -24,14 +24,14 @@ public class Controller_View
     
     //方法中使用到的一些对象
     Activity activity;
-    Selector_Model function_app;
+    Selector_Model selector_model;
     Config config;
     DrawView drawView;
 	
 	Controller_View(Activity actvt,Selector_Model fctap, Config cfg, DrawView dv)
 	{
 		activity = actvt;
-		function_app = fctap;
+		selector_model = fctap;
 		config = cfg;
 		drawView = dv;
 		
@@ -45,6 +45,10 @@ public class Controller_View
 
         press.setOnClickListener(new OCL_Press());
         clean.setOnClickListener(new OCL_Clean());
+        edit_mode.setOnEditorActionListener(new OCL_Mode());
+        edit_start.setOnEditorActionListener(new OCL_Start());
+        edit_end.setOnEditorActionListener(new OCL_End());
+        edit_stepparam.setOnEditorActionListener(new OCL_StepParam());
         edit_distance.setOnEditorActionListener(new OCL_Distance());
 	}
 	
@@ -59,20 +63,11 @@ public class Controller_View
 			}
 			else if(config.MODE == Selector_Model.CALIBRATE)
 			{
-				if(edit_mode.getText().toString().equalsIgnoreCase("n") == true || edit_mode.getText().toString().equalsIgnoreCase("s") == true)
-				{
-					//配置从视图存储到sd卡
-		        	config.Read_ViewtoSD(edit_start,edit_end,edit_mode,edit_stepparam,edit_distance);
-		        	((Button)v).setText("PRESS");
-				}
+				selector_model.clbrt.state = !selector_model.clbrt.state;
+				if(selector_model.clbrt.state == false)
+					((Button)v).setText("ENDED");
 				else
-				{
-					function_app.clbrt.state = !function_app.clbrt.state;
-					if(function_app.clbrt.state == false)
-						((Button)v).setText("ENDED");
-					else
-						((Button)v).setText("RUNNING");
-				}
+					((Button)v).setText("RUNNING");
 			}
 			else if(config.MODE == Selector_Model.SIMPLE_NAVIGATE)
 			{
@@ -83,7 +78,7 @@ public class Controller_View
             final InputMethodManager imm = (InputMethodManager)activity.getSystemService(
             	      Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-        }  
+        }
 	}
 	
 	class OCL_Clean implements OnClickListener
@@ -92,13 +87,78 @@ public class Controller_View
         public void onClick(View v) {
     		//绘图清空
     		drawView.clean();
-    		function_app.nvgt.cleanall();
-        	function_app.clbrt.cleanall();
+    		selector_model.nvgt.cleanall();
+        	selector_model.clbrt.cleanall();
+        	press.setText("ENDED");
     		//轨迹清空,位置回归
         	drawView.trajectory.cleanalldata();
         } 
 	}
-	
+	class OCL_Mode implements OnEditorActionListener
+	{
+		@Override
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			//隐藏键盘
+			final InputMethodManager imm = (InputMethodManager)activity.getSystemService(
+            	      Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            config.MODE = config.parse_mode((EditText)v);
+        	//提示信息
+        	v.setText("");
+        	v.setHint(Selector_Model.name_mode[config.MODE]);
+        	
+        	//适配修改button的提示信息
+        	if(config.MODE == Selector_Model.NAVIGATE)
+        		press.setText("STORE");
+        	else if(config.MODE == Selector_Model.CALIBRATE)
+        	{
+        		if(selector_model.clbrt.state == false)
+        			press.setText("ENDED");
+				else
+					press.setText("RUNNING");
+        	}
+        	else if(config.MODE == Selector_Model.SIMPLE_NAVIGATE)
+        		press.setText("STORE");
+        	
+			return false;
+		}  
+	}
+	class OCL_Start implements OnEditorActionListener
+	{
+		@Override
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			//隐藏键盘
+			final InputMethodManager imm = (InputMethodManager)activity.getSystemService(
+            	      Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            config.SFM1_4 = Integer.parseInt(v.getText().toString());
+			return false;
+		}  
+	}
+	class OCL_End implements OnEditorActionListener
+	{
+		@Override
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			//隐藏键盘
+			final InputMethodManager imm = (InputMethodManager)activity.getSystemService(
+            	      Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            config.EFM1_4 = Integer.parseInt(v.getText().toString());;
+			return false;
+		}  
+	}
+	class OCL_StepParam implements OnEditorActionListener
+	{
+		@Override
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+			//隐藏键盘
+			final InputMethodManager imm = (InputMethodManager)activity.getSystemService(
+            	      Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            config.STEP_PARAM = Float.parseFloat(v.getText().toString());;
+			return false;
+		}  
+	}
 	class OCL_Distance implements OnEditorActionListener
 	{
 		@Override
@@ -107,7 +167,7 @@ public class Controller_View
 			final InputMethodManager imm = (InputMethodManager)activity.getSystemService(
             	      Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-            config.DISTANCE = Float.parseFloat(edit_distance.getText().toString());;
+            config.DISTANCE = Float.parseFloat(v.getText().toString());;
 			return false;
 		}  
 	}

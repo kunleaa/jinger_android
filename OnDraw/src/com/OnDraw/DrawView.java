@@ -10,7 +10,7 @@ public class DrawView extends View {
 	//参数信息显示开关
 	boolean switch_info = false;
     //地图显示参数
-	public Parameter_Map para_map ;
+	public Parameter_Map para_map;
 	//路径信息相关
 	public Trajectory trajectory;
 	
@@ -52,12 +52,11 @@ public class DrawView extends View {
 	float mean_oriacc = 0;
 	
 	public DrawView(Context context) {
-	super(context);
-    //定义地图的参数
-    para_map = new Parameter_Map();
-    //绘制轨迹
-    trajectory = new Trajectory(para_map);
-	// TODO Auto-generated constructor stub
+		super(context);
+	    //定义地图的参数
+	    para_map = new Parameter_Map();
+	    //绘制轨迹
+	    trajectory = new Trajectory(para_map);
 	}
 
 	/**

@@ -6,11 +6,11 @@
 
 
     <LinearLayout 
-        android:id="@+id/layout" 
-        android:orientation="vertical"
-        android:gravity="bottom"
-        android:layout_width="fill_parent" 
-        android:layout_height="wrap_content" >
+    android:id="@+id/layout" 
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent">
         <LinearLayout 
         android:id="@+id/layout2" 
         android:orientation="horizontal"
@@ -67,7 +67,7 @@
 	            android:layout_width="fill_parent"
 	            android:layout_height="30dp"
 	            android:layout_weight="1"
-	            android:text="PRESS"
+	            android:text="STORE"
 	            android:textSize="11dp"
 	            android:layout_gravity="top"
 	            android:layout_marginTop="0dp"/>

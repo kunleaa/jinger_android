@@ -65,7 +65,7 @@ public class Calibration extends RotateAndFilt
 		if(cf.DISTANCE > 0)
 		{
 			cf.STEP_PARAM = statistic.calcu_stepdisparam_byWeinberg(cf.DISTANCE);
-			cv.edit_stepparam.setText(""+cf.STEP_PARAM);
+			cv.edit_stepparam.setText(""+GeneralTool.cut_decimal(cf.STEP_PARAM,2));
 		}
 		
 		statistic.mean_orisen_calibrate(count_cali, count_step);

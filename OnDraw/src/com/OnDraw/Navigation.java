@@ -12,7 +12,7 @@ public class Navigation extends RotateAndFilt
 	//计算导航坐标
 	void run_navigate(Data_Sensor ds, DrawView dv, Config cfg)
 	{
-		float[] data_ori_tans = ds.use_ori_trans();
+		float [] data_ori_tans = ds.use_ori_trans();
 		float [] AbsCoodinate_filt;
 		//由旋转矩阵计算的绝对坐标系下加速度的坐标值 
 		AbsCoodinate_filt = rotate_filt(ds,dv);

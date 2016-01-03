@@ -60,7 +60,7 @@ public class Config
         cv.edit_mode.setHint(Selector_Model.name_mode[MODE]);
 	}
 	//从控件中解析要配置的模式
-	int parse_mode(EditText md)
+	public int parse_mode(EditText md)
 	{
 		int mode = Selector_Model.SIMPLE_NAVIGATE;
     	String str_mode = md.getText().toString();
