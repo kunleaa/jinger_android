@@ -1,23 +1,33 @@
+%close all
 clear; 
 clc;
-acc_xyz = importdata('data_acc.txt');
-mmindex = importdata('data_min_max_index.txt');
-ori_c_o = importdata('data_angel.txt');
+ON = 1;
+OFF = 0;
 
-%遍历 [波峰波谷四分之一 -5 , 波峰] 这个区间 
-for interval = 0:1:6
-    index_mean = 1;
-    for start = -5:1:5
-        endd = start + interval;
-        for i = 1:1:length(mmindex)
-            orient(i,index_mean) = OrientWithTime(mmindex(i,2),mmindex(i,1),acc_xyz(:,1),acc_xyz(:,2),start,endd);
-        end
-        mean_acc(index_mean,interval+1) = mean_oriacc(orient(:,index_mean));
-        index_mean = index_mean+1;
-    end
-end
+isplot = OFF;
+path = 'E:\MATLAB7\work\picture_data';
 
-mean_senser = mean_oriacc(ori_c_o(:,2));
+condition_mean = 10;
 
-mean_senser
-mean_acc
+acc_xyz_es = importdata('东南方向\data_acc.txt');
+mmindex_es = importdata('东南方向\data_min_max_index.txt');
+ori_c_o_es = importdata('东南方向\data_angel.txt');
+[mean_acc_es,mean_senser_es] = ori_dis_simulator(acc_xyz_es,mmindex_es,ori_c_o_es,isplot,[path,'\es']);
+
+[rol_es,col_es] = filt_with_mean(mean_acc_es,mean_senser_es,condition_mean);
+selected_section_es = trans_rolcol_to_startendd(rol_es,col_es);
+openpicture(path,'\es',selected_section_es);
+
+acc_xyz_wn = importdata('西北方向\data_acc.txt');
+mmindex_wn = importdata('西北方向\data_min_max_index.txt');
+ori_c_o_wn = importdata('西北方向\data_angel.txt');
+[mean_acc_wn,mean_senser_wn] = ori_dis_simulator(acc_xyz_wn,mmindex_wn,ori_c_o_wn,isplot,[path,'\wn']);
+
+[rol_wn,col_wn] = filt_with_mean(mean_acc_wn,mean_senser_wn,condition_mean);
+selected_section_wn = trans_rolcol_to_startendd(rol_wn,col_wn);
+openpicture(path,'\wn',selected_section_wn);
+
+[rol,col] = filt_with_mean((mean_acc_es - mean_acc_wn),(mean_senser_es - mean_senser_wn),condition_mean);
+selected_section = trans_rolcol_to_startendd(rol,col);
+openpicture(path,'\es',selected_section);
+openpicture(path,'\wn',selected_section);
