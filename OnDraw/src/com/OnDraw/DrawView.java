@@ -92,6 +92,14 @@ public class DrawView extends View {
 			
 			canvas.drawText(String.valueOf(Step), 10, 150, paint);
 			canvas.drawText(String.valueOf(distance), 300, 150, paint);
+			
+			canvas.drawText(String.valueOf(accelerationA), 10, 200, paint);
+			canvas.drawText(String.valueOf(accelerationB), 300, 200, paint);
+			canvas.drawText(String.valueOf(accelerationC), 600, 200, paint);
+			
+			canvas.drawText(String.valueOf(orientationA), 10, 250, paint);
+			canvas.drawText(String.valueOf(orientationB), 300, 250, paint);
+			canvas.drawText(String.valueOf(orientationC), 600, 250, paint);
 		}
 	}
 	

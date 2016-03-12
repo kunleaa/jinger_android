@@ -1,6 +1,10 @@
-function [mean_acc,mean_senser] = ori_dis_simulator(acc_xyz,mmindex,ori_c_o,isplot,path)
+function [mean_acc,mean_senser,oriout,variance_acc] = ori_dis_simulator(acc_xyz,mmindex,ori_c_o,isplot,navimodel,path)
 ON = 1;
 OFF = 0;
+
+NORMAL = 1;
+INDEPENDENT = 2;
+CORRALETIVE = 3;
 
 k = 0.55;
 
@@ -9,28 +13,34 @@ for interval = 0:1:6
     index_mean = 1;
     for start = -5:1:5
         endd = start + interval;
-        position_x(1,index_mean) = 0;
-        position_y(1,index_mean) = 0;
         for i = 1:1:length(mmindex)
-            orient(i,index_mean) = OrientWithTime(mmindex(i,2),mmindex(i,1),acc_xyz(:,1),acc_xyz(:,2),start,endd);
-            angle_sin(i,index_mean) = sin(orient(i,index_mean)/180*pi);
-            angle_cos(i,index_mean) = cos(orient(i,index_mean)/180*pi);
-
-            distance(i,index_mean) = calcudistan_Weinberg(-acc_xyz(mmindex(i,2),3),-acc_xyz(mmindex(i,1),3));
-            position_x(i+1,index_mean) = position_x(i,index_mean) + angle_sin(i,index_mean) * distance(i,index_mean);
-            position_y(i+1,index_mean) = position_y(i,index_mean) + angle_cos(i,index_mean) * distance(i,index_mean);
+            orient(i,index_mean,interval+1) = OrientWithTime(mmindex(i,2),mmindex(i,1),acc_xyz(:,1),acc_xyz(:,2),start,endd);
+        end
+        oriout = orient;
+        
+        if navimodel == NORMAL
+            [position_x, position_y, oriout(:,index_mean,interval+1)] = navigate_normal(orient(:,index_mean,interval+1), acc_xyz, mmindex);
         end
         
+        if navimodel == INDEPENDENT 
+            [position_x, position_y, oriout(:,index_mean,interval+1)] = navigate_towstep_independent(orient(:,index_mean,interval+1), acc_xyz, mmindex);
+        end
         
-            figure
-            plot(position_x(:,index_mean),position_y(:,index_mean));
-            title(['start:',int2str(start),' end:',int2str(endd)]);
-            savepicture(path,get_picture_name(interval,start,endd));
+        if navimodel == CORRALETIVE
+            [position_x, position_y, oriout(:,index_mean,interval+1)] = navigate_towstep_correlative(orient(:,index_mean,interval+1), acc_xyz, mmindex);
+        end
+        
+        figure
+        plot(position_x,position_y);
+        title(['start:',int2str(start),' end:',int2str(endd)]);
+        savepicture(path,get_picture_name(interval,start,endd));
+
         if isplot == OFF
             close(figure(gcf)) 
         end
 
-        mean_acc(index_mean,interval+1) = mean_oriacc(orient(:,index_mean));
+        mean_acc(index_mean,interval+1) = mean_oriacc(oriout(:,index_mean,interval+1));
+        variance_acc(index_mean,interval+1) = variance_oriacc(oriout(:,index_mean,interval+1),mean_acc(index_mean,interval+1));
         index_mean = index_mean+1;
     end
 end
@@ -38,3 +48,18 @@ mean_senser = mean_oriacc(ori_c_o(:,2));
 
 mean_senser;
 mean_acc;
+oriout;
+variance_acc;
+
+function [vari] = variance_oriacc(orient,mean)
+vari = abs(orient-mean);
+[rol,col] = find(vari>180);
+if length(rol) > 0
+    for i = 1 : length(rol)
+        vari(rol(i),col(i)) = 360 - vari(rol(i),col(i));
+    end
+end
+
+vari = sum(vari)/length(orient);
+
+
