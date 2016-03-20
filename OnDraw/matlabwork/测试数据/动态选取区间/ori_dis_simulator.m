@@ -6,8 +6,6 @@ NORMAL = 1;
 INDEPENDENT = 2;
 CORRALETIVE = 3;
 
-k = 0.55;
-
 %遍历 [波峰波谷四分之一 -5 , 波峰] 这个区间 
 for interval = 0:1:6
     index_mean = 1;
@@ -16,7 +14,6 @@ for interval = 0:1:6
         for i = 1:1:length(mmindex)
             orient(i,index_mean,interval+1) = OrientWithTime(mmindex(i,2),mmindex(i,1),acc_xyz(:,1),acc_xyz(:,2),start,endd);
         end
-        oriout = orient;
         
         if navimodel == NORMAL
             [position_x, position_y, oriout(:,index_mean,interval+1)] = navigate_normal(orient(:,index_mean,interval+1), acc_xyz, mmindex);
@@ -60,6 +57,6 @@ if length(rol) > 0
     end
 end
 
-vari = sum(vari)/length(orient);
+vari = sqrt(sum(vari.*vari)/length(orient));
 
 
